@@ -22,20 +22,22 @@ public class LevelMeter extends JPanel {
 
 	private final Color[] ledColors;
 	private int width = 200, height = 200;
+	private final int radius = width / 2 - 40;
 	private int ledSize = 26;
-
-	private final int DISTANCE_DOT_FROM_ORIGIN = width / 2 - 40;
 
 	public LevelMeter(int leds) {
 		ledColors = new Color[leds];
 		fill(ledColors, BLACK);
 		setLayout(null);
+		sizes();
+	}
+
+	private void sizes() {
 		Dimension dim = new Dimension(width, height);
 		setMinimumSize(dim);
 		setMaximumSize(dim);
 		setPreferredSize(dim);
 		repaint();
-
 	}
 
 	public LevelMeter withLedSize(int ledSize) {
@@ -72,16 +74,16 @@ public class LevelMeter extends JPanel {
 	}
 
 	private Point ledCoordinates(int step) {
-		double t = 2 * PI * (step + 1 + (ledColors.length / 4)) / ledColors.length ;
-		return new Point(x(DISTANCE_DOT_FROM_ORIGIN, t), y(
-				DISTANCE_DOT_FROM_ORIGIN, t));
+		double t = 2 * PI * (step + 1 + (ledColors.length / 4))
+				/ ledColors.length;
+		return new Point(x(t), y(t));
 	}
 
-	private int x(int radius, double t) {
+	private int x(double t) {
 		return (int) (width / 2 + radius * cos(t));
 	}
 
-	private int y(int radius, double t) {
+	private int y(double t) {
 		return (int) (height / 2 + radius * sin(t));
 	}
 
