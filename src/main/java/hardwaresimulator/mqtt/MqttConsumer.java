@@ -25,7 +25,7 @@ public class MqttConsumer implements Closeable {
 	public MqttConsumer(String host, int port) throws IOException {
 		try {
 			mqttClient = new MqttClient("tcp://" + host + ":" + port,
-					getClass().getName(), new MemoryPersistence());
+					getClass().getName() + "-" + System.currentTimeMillis(), new MemoryPersistence());
 			mqttClient.setTimeToWait(SECONDS.toMillis(1));
 			mqttClient.setCallback(callback());
 			mqttClient.connect(connectOptions());
@@ -36,15 +36,17 @@ public class MqttConsumer implements Closeable {
 
 	private MqttCallback callback() {
 		return new MqttCallbackExtended() {
-
 			@Override
-			public void messageArrived(String topic, MqttMessage mqttMessage)
-					throws Exception {
-				Message message = new Message(topic, new String(
-						mqttMessage.getPayload()), false);
-				for (Consumer<Message> consumer : consumers) {
-					consumer.accept(message);
-				}
+			public void messageArrived(String topic, MqttMessage message) throws Exception {
+				messageArrived(convert(topic, message));
+			}
+
+			private void messageArrived(Message message) {
+				consumers.forEach(consumer -> consumer.accept(message));
+			}
+
+			private Message convert(String topic, MqttMessage mqttMessage) {
+				return new Message(topic, new String(mqttMessage.getPayload()), false);
 			}
 
 			@Override

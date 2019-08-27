@@ -1,4 +1,5 @@
 package hardwaresimulator.mqtt;
+
 public class Message {
 
 	private final String topic;
