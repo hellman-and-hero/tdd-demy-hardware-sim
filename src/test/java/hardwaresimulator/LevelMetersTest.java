@@ -23,8 +23,8 @@ class LevelMetersTest {
 	@Test
 	void whenSwitchingLed0_Led0OnRing0IsSwitched() {
 		sut.switchLed(0, RED);
-		verifySwitched(levelMeters.get(0), 0, RED);
-		verifyNoLedSwitched(levelMeters.get(1));
+		verifySwitched(ring(0), 0, RED);
+		verifyNoLedSwitched(ring(1));
 	}
 
 	private static LevelMeter createSpy(List<LevelMeter> spies) {
@@ -36,15 +36,19 @@ class LevelMetersTest {
 	@Test
 	void whenSwitchingLed2_Led0OnRing1IsSwitched() {
 		sut.switchLed(2, GREEN);
-		verifyNoLedSwitched(levelMeters.get(0));
-		verifySwitched(levelMeters.get(1), 0, GREEN);
+		verifyNoLedSwitched(ring(0));
+		verifySwitched(ring(1), 0, GREEN);
 	}
 
 	@Test
 	void whenSwitchingLed3_Led1OnRing1IsSwitched() {
 		sut.switchLed(3, BLUE);
-		verifyNoLedSwitched(levelMeters.get(0));
-		verifySwitched(levelMeters.get(1), 1, BLUE);
+		verifyNoLedSwitched(ring(0));
+		verifySwitched(ring(1), 1, BLUE);
+	}
+
+	LevelMeter ring(int ring) {
+		return levelMeters.get(ring);
 	}
 
 	void verifySwitched(LevelMeter levelMeter, int led, Color color) {

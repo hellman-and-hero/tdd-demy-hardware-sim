@@ -4,8 +4,8 @@ import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import static javax.swing.SwingUtilities.invokeLater;
-import hardwaresimulator.mqtt.Message;
-import hardwaresimulator.mqtt.MqttConsumer;
+import static org.kohsuke.args4j.OptionHandlerFilter.ALL;
+import static org.kohsuke.args4j.ParserProperties.defaults;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -18,29 +18,74 @@ import java.util.regex.Pattern;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+
+import hardwaresimulator.mqtt.Message;
+import hardwaresimulator.mqtt.MqttConsumer;
+
 public class Main {
 
-	private static final String MQTT_HOST = "127.0.0.1";
-	private static final int MQTT_PORT = 1883;
-	private static final int RINGS = 4;
-	private static final int LED_COUNT = 16;
+	@Option(name = "-h", help = true)
+	public boolean help;
 
-	private LevelMeters levelMeters = new LevelMeters(RINGS, () -> newLevelMeter());
+	@Option(name = "-mqttHost", usage = "hostname of the mqtt broker")
+	public String mqttHost = "127.0.0.1";
+	@Option(name = "-mqttPort", usage = "port of the mqtt broker")
+	public int mqttPort = 1883;
+	
+	@Option(name = "-rings", required = true, usage = "how many leds rings should be simulated")
+	public int rings = 4;
+	@Option(name = "-ledCount", required = true, usage = "how many leds should each ring have")
+	public int ledCount = 16;
+	@Option(name = "-ledSize", required = true, usage = "size in pixels of each led")
+	public int ledSize = 12;
+
+	private LevelMeters levelMeters = new LevelMeters(rings, () -> newLevelMeter());
 	private final Pattern topicPattern = compile("some/led/(\\d+)/rgb");
 	private MqttConsumer mqtt;
 
-	private static LevelMeter newLevelMeter() {
-		return new LevelMeter(LED_COUNT).withLedSize(12);
+	private LevelMeter newLevelMeter() {
+		return new LevelMeter(ledCount).withLedSize(ledSize);
 	}
 
-	public static void main(String[] args) throws IOException {
-		new Main();
+	public static void main(String... args) throws IOException {
+		Main main = new Main();
+		if (main.parseArgs(args)) {
+			main.startup();
+		}
 	}
 
-	public Main() throws IOException {
-		mqtt = new MqttConsumer(MQTT_HOST, MQTT_PORT);
+	private void startup() throws IOException {
+		mqtt = new MqttConsumer(mqttHost, mqttPort);
 		mqtt.addConsumer(this::consume);
+
 		invokeLater(() -> createAndShowGUI());
+	}
+
+	private boolean parseArgs(String... args) {
+		CmdLineParser parser = new CmdLineParser(this, defaults().withUsageWidth(80));
+		try {
+			parser.parseArgument(args);
+			if (help) {
+				printHelp(parser);
+				return false;
+			}
+		} catch (CmdLineException e) {
+			System.err.println(e.getMessage());
+			printHelp(parser);
+			return false;
+		}
+		return true;
+	}
+
+	private void printHelp(CmdLineParser parser) {
+		String mainClassName = getClass().getName();
+		System.err.println("java " + mainClassName + " [options...] arguments...");
+		parser.printUsage(System.err);
+		System.err.println();
+		System.err.println("  Example: java " + mainClassName + parser.printExample(ALL));
 	}
 
 	private void consume(Message message) {
