@@ -2,6 +2,8 @@ package hardwaresimulator.sim;
 
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import static javax.swing.SwingUtilities.invokeLater;
 
@@ -10,6 +12,7 @@ import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,15 +39,16 @@ public class HardwareSimulater {
 	}
 
 	private final MqttConsumer mqtt;
-	private final LevelMeters levelMeters;
+	private final LedStrip ledStrip;
 	private final Pattern topicPattern = compile("some/led/(\\d+)/rgb");
+	private List<JLevelMeter> levelMeters;
 
 	public HardwareSimulater(Config config) {
 		try {
 			mqtt = new MqttConsumer(config.mqttHost(), config.mqttPort());
 			mqtt.addConsumer(this::consume);
-
-			levelMeters = new LevelMeters(config.rings(), () -> newLevelMeter(config));
+			levelMeters = range(0, config.rings()).mapToObj(i -> newLevelMeter(config)).collect(toList());
+			ledStrip = new LedStrip(levelMeters);
 			invokeLater(() -> createAndShowGUI());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -68,7 +72,7 @@ public class HardwareSimulater {
 		frame.getContentPane().add(panel);
 
 		frame.setLayout(new FlowLayout());
-		levelMeters.forEach(m -> panel.add(m));
+		levelMeters.forEach(panel::add);
 		frame.pack();
 		frame.setResizable(false);
 		frame.setVisible(true);
@@ -78,12 +82,12 @@ public class HardwareSimulater {
 		System.out.println(format("Received %s %s", message.getTopic(), message.getPayload()));
 		Matcher matcher = topicPattern.matcher(message.getTopic());
 		if (matcher.matches()) {
-			levelMeters.switchLed(Integer.parseInt(matcher.group(1)), Color.decode(message.getPayload()));
+			ledStrip.switchLed(Integer.parseInt(matcher.group(1)), Color.decode(message.getPayload()));
 		}
 	}
 
-	private LevelMeter newLevelMeter(Config config) {
-		return new LevelMeter(config.ledCount()).withSize(config.ringSize()).withLedSize(config.ledSize());
+	private JLevelMeter newLevelMeter(Config config) {
+		return new JLevelMeter(config.ledCount()).withSize(config.ringSize()).withLedSize(config.ledSize());
 	}
 
 }

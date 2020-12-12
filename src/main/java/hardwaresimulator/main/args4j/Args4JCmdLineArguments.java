@@ -2,7 +2,7 @@ package hardwaresimulator.main.args4j;
 
 import org.kohsuke.args4j.Option;
 
-import hardwaresimulator.sim.LevelMeter;
+import hardwaresimulator.sim.JLevelMeter;
 
 public class Args4JCmdLineArguments {
 
@@ -19,8 +19,8 @@ public class Args4JCmdLineArguments {
 	@Option(name = "-ledCount", usage = "how many leds should each ring have")
 	public int ledCount = 16;
 	@Option(name = "-ringSize", usage = "size in pixels of each ring")
-	public int ringSize = LevelMeter.DEFAULT_RING_SIZE;
+	public int ringSize = JLevelMeter.DEFAULT_RING_SIZE;
 	@Option(name = "-ledSize", usage = "size in pixels of each led")
-	public int ledSize = LevelMeter.DEFAULT_LED_SIZE;
+	public int ledSize = JLevelMeter.DEFAULT_LED_SIZE;
 
 }
