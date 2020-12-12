@@ -34,15 +34,15 @@ public class Main {
 	public String mqttHost = "127.0.0.1";
 	@Option(name = "-mqttPort", usage = "port of the mqtt broker")
 	public int mqttPort = 1883;
-	
-	@Option(name = "-rings", required = true, usage = "how many leds rings should be simulated")
+
+	@Option(name = "-rings", usage = "how many leds rings should be simulated")
 	public int rings = 4;
-	@Option(name = "-ledCount", required = true, usage = "how many leds should each ring have")
+	@Option(name = "-ledCount", usage = "how many leds should each ring have")
 	public int ledCount = 16;
-	@Option(name = "-ledSize", required = true, usage = "size in pixels of each led")
+	@Option(name = "-ledSize", usage = "size in pixels of each led")
 	public int ledSize = 12;
 
-	private LevelMeters levelMeters = new LevelMeters(rings, () -> newLevelMeter());
+	private LevelMeters levelMeters;
 	private final Pattern topicPattern = compile("some/led/(\\d+)/rgb");
 	private MqttConsumer mqtt;
 
@@ -61,6 +61,7 @@ public class Main {
 		mqtt = new MqttConsumer(mqttHost, mqttPort);
 		mqtt.addConsumer(this::consume);
 
+		levelMeters = new LevelMeters(rings, () -> newLevelMeter());
 		invokeLater(() -> createAndShowGUI());
 	}
 
