@@ -15,7 +15,7 @@ public class Args4JCmdLineArguments {
 	public int mqttPort = 1883;
 
 	@Option(name = "-rings", usage = "how many leds rings should be simulated")
-	public int rings = 4;
+	public int rings = 2;
 	@Option(name = "-ledCount", usage = "how many leds should each ring have")
 	public int ledCount = 16;
 	@Option(name = "-ringSize", usage = "size in pixels of each ring")
