@@ -1,0 +1,24 @@
+package hardwaresimulator;
+
+import org.kohsuke.args4j.Option;
+
+public class CommandLineArguments {
+
+	@Option(name = "-h", help = true)
+	public boolean help;
+
+	@Option(name = "-mqttHost", usage = "hostname of the mqtt broker")
+	public String mqttHost = "127.0.0.1";
+	@Option(name = "-mqttPort", usage = "port of the mqtt broker")
+	public int mqttPort = 1883;
+
+	@Option(name = "-rings", usage = "how many leds rings should be simulated")
+	public int rings = 4;
+	@Option(name = "-ledCount", usage = "how many leds should each ring have")
+	public int ledCount = 16;
+	@Option(name = "-ringSize", usage = "size in pixels of each ring")
+	public int ringSize = LevelMeter.DEFAULT_RING_SIZE;
+	@Option(name = "-ledSize", usage = "size in pixels of each led")
+	public int ledSize = LevelMeter.DEFAULT_LED_SIZE;
+
+}

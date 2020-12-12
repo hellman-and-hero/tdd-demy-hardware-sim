@@ -12,6 +12,7 @@ import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,67 +21,50 @@ import javax.swing.JPanel;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
 
 import hardwaresimulator.mqtt.Message;
 import hardwaresimulator.mqtt.MqttConsumer;
 
 public class Main {
 
-	@Option(name = "-h", help = true)
-	public boolean help;
-
-	@Option(name = "-mqttHost", usage = "hostname of the mqtt broker")
-	public String mqttHost = "127.0.0.1";
-	@Option(name = "-mqttPort", usage = "port of the mqtt broker")
-	public int mqttPort = 1883;
-
-	@Option(name = "-rings", usage = "how many leds rings should be simulated")
-	public int rings = 4;
-	@Option(name = "-ledCount", usage = "how many leds should each ring have")
-	public int ledCount = 16;
-	@Option(name = "-ringSize", usage = "size in pixels of each ring")
-	public int ringSize = LevelMeter.DEFAULT_RING_SIZE;
-	@Option(name = "-ledSize", usage = "size in pixels of each led")
-	public int ledSize = LevelMeter.DEFAULT_LED_SIZE;
-
 	private LevelMeters levelMeters;
 	private final Pattern topicPattern = compile("some/led/(\\d+)/rgb");
 	private MqttConsumer mqtt;
 
-	private LevelMeter newLevelMeter() {
-		return new LevelMeter(ledCount).withSize(ringSize).withLedSize(ledSize);
-	}
-
 	public static void main(String... args) throws IOException {
 		Main main = new Main();
-		if (main.parseArgs(args)) {
-			main.startup();
+		main.tryParseArgs(args).ifPresent(main::startup);
+	}
+
+	private void startup(CommandLineArguments args) {
+		try {
+			mqtt = new MqttConsumer(args.mqttHost, args.mqttPort);
+			mqtt.addConsumer(this::consume);
+
+			levelMeters = new LevelMeters(args.rings, () -> newLevelMeter(args));
+			invokeLater(() -> createAndShowGUI());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
-	private void startup() throws IOException {
-		mqtt = new MqttConsumer(mqttHost, mqttPort);
-		mqtt.addConsumer(this::consume);
-
-		levelMeters = new LevelMeters(rings, () -> newLevelMeter());
-		invokeLater(() -> createAndShowGUI());
+	private LevelMeter newLevelMeter(CommandLineArguments cmdLineArgs) {
+		return new LevelMeter(cmdLineArgs.ledCount).withSize(cmdLineArgs.ringSize).withLedSize(cmdLineArgs.ledSize);
 	}
 
-	private boolean parseArgs(String... args) {
-		CmdLineParser parser = new CmdLineParser(this, defaults().withUsageWidth(80));
+	private Optional<CommandLineArguments> tryParseArgs(String... args) {
+		CommandLineArguments cmdLineArgs = new CommandLineArguments();
+		CmdLineParser parser = new CmdLineParser(cmdLineArgs, defaults().withUsageWidth(80));
 		try {
 			parser.parseArgument(args);
-			if (help) {
-				printHelp(parser);
-				return false;
+			if (!cmdLineArgs.help) {
+				return Optional.of(cmdLineArgs);
 			}
 		} catch (CmdLineException e) {
 			System.err.println(e.getMessage());
-			printHelp(parser);
-			return false;
 		}
-		return true;
+		printHelp(parser);
+		return Optional.empty();
 	}
 
 	private void printHelp(CmdLineParser parser) {
