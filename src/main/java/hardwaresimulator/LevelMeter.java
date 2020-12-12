@@ -20,10 +20,13 @@ public class LevelMeter extends JPanel {
 
 	private static final long serialVersionUID = 7567178446520016358L;
 
+	public static final int DEFAULT_RING_SIZE = 200;
+	public static final int DEFAULT_LED_SIZE = 16;
+
 	private final Color[] ledColors;
-	private int width = 200, height = 200;
-	private final int radius = width / 2 - 40;
-	private int ledSize = 26;
+	private int width = DEFAULT_RING_SIZE, height = DEFAULT_RING_SIZE;
+	private int radius;
+	private int ledSize = DEFAULT_LED_SIZE;
 
 	public LevelMeter(int leds) {
 		ledColors = new Color[leds];
@@ -33,6 +36,7 @@ public class LevelMeter extends JPanel {
 	}
 
 	private void sizes() {
+		radius = width / 2 - 40;
 		Dimension dim = new Dimension(width, height);
 		setMinimumSize(dim);
 		setMaximumSize(dim);
@@ -48,6 +52,7 @@ public class LevelMeter extends JPanel {
 	public LevelMeter withSize(int size) {
 		this.width = size;
 		this.height = size;
+		sizes();
 		return this;
 	}
 
@@ -69,13 +74,11 @@ public class LevelMeter extends JPanel {
 	private void drawLed(Graphics2D g2, int led) {
 		Point ledCoordinates = ledCoordinates(led);
 		g2.setColor(ledColors[led]);
-		g2.fillOval(ledCoordinates.x - (ledSize / 2), ledCoordinates.y
-				- (ledSize / 2), ledSize, ledSize);
+		g2.fillOval(ledCoordinates.x - (ledSize / 2), ledCoordinates.y - (ledSize / 2), ledSize, ledSize);
 	}
 
 	private Point ledCoordinates(int step) {
-		double t = 2 * PI * (step + 1 + (ledColors.length / 4))
-				/ ledColors.length;
+		double t = 2 * PI * (step + 1 + (ledColors.length / 4)) / ledColors.length;
 		return new Point(x(t), y(t));
 	}
 

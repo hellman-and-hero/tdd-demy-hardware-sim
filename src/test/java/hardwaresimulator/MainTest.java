@@ -13,6 +13,7 @@ class MainTest {
 				.contains("-mqttHost ") //
 				.contains("-mqttPort ") //
 				.contains("-rings ") //
+				.contains("-ringSize ") //
 				.contains("-ledCount ") //
 				.contains("-ledSize ");
 	}

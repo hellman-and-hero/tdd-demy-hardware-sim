@@ -39,15 +39,17 @@ public class Main {
 	public int rings = 4;
 	@Option(name = "-ledCount", usage = "how many leds should each ring have")
 	public int ledCount = 16;
+	@Option(name = "-ringSize", usage = "size in pixels of each ring")
+	public int ringSize = LevelMeter.DEFAULT_RING_SIZE;
 	@Option(name = "-ledSize", usage = "size in pixels of each led")
-	public int ledSize = 12;
+	public int ledSize = LevelMeter.DEFAULT_LED_SIZE;
 
 	private LevelMeters levelMeters;
 	private final Pattern topicPattern = compile("some/led/(\\d+)/rgb");
 	private MqttConsumer mqtt;
 
 	private LevelMeter newLevelMeter() {
-		return new LevelMeter(ledCount).withLedSize(ledSize);
+		return new LevelMeter(ledCount).withSize(ringSize).withLedSize(ledSize);
 	}
 
 	public static void main(String... args) throws IOException {
