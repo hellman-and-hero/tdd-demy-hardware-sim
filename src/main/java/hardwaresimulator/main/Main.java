@@ -16,7 +16,11 @@ import hardwaresimulator.sim.HardwareSimulater.Config;
 public class Main {
 
 	public static void main(String... args) throws IOException {
-		tryParseArgs(args).map(Main::argsAdapter).ifPresent(HardwareSimulater::new);
+		createConfig(args).ifPresent(HardwareSimulater::new);
+	}
+
+	protected static Optional<Config> createConfig(String... args) {
+		return tryParseArgs(args).map(Main::argsAdapter);
 	}
 
 	private static Optional<Args4JCmdLineArguments> tryParseArgs(String... args) {
