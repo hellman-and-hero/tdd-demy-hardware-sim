@@ -1,4 +1,4 @@
-package hardwaresimulator;
+package hardwaresimulator.sim;
 
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
@@ -21,16 +21,30 @@ import hardwaresimulator.mqtt.MqttConsumer;
 
 public class HardwareSimulater {
 
-	private LevelMeters levelMeters;
-	private final Pattern topicPattern = compile("some/led/(\\d+)/rgb");
-	private MqttConsumer mqtt;
+	public interface Config {
+		String mqttHost();
 
-	public HardwareSimulater(CommandLineArguments args) {
+		int mqttPort();
+
+		int rings();
+
+		int ledCount();
+
+		int ringSize();
+
+		int ledSize();
+	}
+
+	private final MqttConsumer mqtt;
+	private final LevelMeters levelMeters;
+	private final Pattern topicPattern = compile("some/led/(\\d+)/rgb");
+
+	public HardwareSimulater(Config config) {
 		try {
-			mqtt = new MqttConsumer(args.mqttHost, args.mqttPort);
+			mqtt = new MqttConsumer(config.mqttHost(), config.mqttPort());
 			mqtt.addConsumer(this::consume);
 
-			levelMeters = new LevelMeters(args.rings, () -> newLevelMeter(args));
+			levelMeters = new LevelMeters(config.rings(), () -> newLevelMeter(config));
 			invokeLater(() -> createAndShowGUI());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -68,8 +82,8 @@ public class HardwareSimulater {
 		}
 	}
 
-	private LevelMeter newLevelMeter(CommandLineArguments cmdLineArgs) {
-		return new LevelMeter(cmdLineArgs.ledCount).withSize(cmdLineArgs.ringSize).withLedSize(cmdLineArgs.ledSize);
+	private LevelMeter newLevelMeter(Config config) {
+		return new LevelMeter(config.ledCount()).withSize(config.ringSize()).withLedSize(config.ledSize());
 	}
 
 }

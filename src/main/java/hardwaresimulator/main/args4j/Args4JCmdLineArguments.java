@@ -1,8 +1,10 @@
-package hardwaresimulator;
+package hardwaresimulator.main.args4j;
 
 import org.kohsuke.args4j.Option;
 
-public class CommandLineArguments {
+import hardwaresimulator.sim.LevelMeter;
+
+public class Args4JCmdLineArguments {
 
 	@Option(name = "-h", help = true)
 	public boolean help;

@@ -1,4 +1,4 @@
-package hardwaresimulator;
+package hardwaresimulator.sim;
 
 import static java.awt.Color.BLACK;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;

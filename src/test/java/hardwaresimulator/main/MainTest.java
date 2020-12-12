@@ -1,4 +1,4 @@
-package hardwaresimulator;
+package hardwaresimulator.main;
 
 import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemErr;
 import static org.assertj.core.api.Assertions.assertThat;

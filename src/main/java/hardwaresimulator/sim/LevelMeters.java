@@ -1,4 +1,4 @@
-package hardwaresimulator;
+package hardwaresimulator.sim;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;

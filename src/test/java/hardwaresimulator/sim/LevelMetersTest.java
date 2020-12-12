@@ -1,4 +1,4 @@
-package hardwaresimulator;
+package hardwaresimulator.sim;
 
 import static java.awt.Color.BLUE;
 import static java.awt.Color.GREEN;

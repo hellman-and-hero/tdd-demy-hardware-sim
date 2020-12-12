@@ -62,7 +62,7 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
-					<mainClass>hardwaresimulator.Main</mainClass>
+					<mainClass>hardwaresimulator.main.Main</mainClass>
 				</configuration>
 			</plugin>
 			<plugin>
