@@ -1,6 +1,5 @@
 package hardwaresimulator.sim;
 
-import static hardwaresimulator.sim.LevelMetersTest.RingBuilder.rings;
 import static java.awt.Color.BLUE;
 import static java.awt.Color.GREEN;
 import static java.awt.Color.RED;
@@ -14,29 +13,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
-import java.util.List;
+import java.util.Iterator;
 
 import org.junit.jupiter.api.Test;
 
 class LevelMetersTest {
 
-	static class RingBuilder {
+	class RingBuilder {
 
-		private int rings;
+		int rings;
 
-		public RingBuilder(int rings) {
+		RingBuilder(int rings) {
 			this.rings = rings;
 		}
 
-		public static RingBuilder rings(int rings) {
-			return new RingBuilder(rings);
+		void eachOfLeds(int leds) {
+			sut = new LedStrip(range(0, rings).mapToObj(i -> levelMeterWithLeds(leds)).collect(toList()));
 		}
 
-		public List<LevelMeter> withLeds(int leds) {
-			return range(0, rings).mapToObj(i -> levelMeterWithLeds(leds)).collect(toList());
-		}
-
-		private static LevelMeter levelMeterWithLeds(int leds) {
+		LevelMeter levelMeterWithLeds(int leds) {
 			LevelMeter mock = mock(LevelMeter.class);
 			when(mock.getLedCount()).thenReturn(leds);
 			return mock;
@@ -44,12 +39,15 @@ class LevelMetersTest {
 
 	}
 
-	List<LevelMeter> levelMeters;
+	public RingBuilder givenRings(int rings) {
+		return new RingBuilder(rings);
+	}
+
 	LedStrip sut;
 
 	@Test
 	void whenSwitchingLed0_Led0OnRing0IsSwitched() {
-		sut = createSut(rings(2).withLeds(2));
+		givenRings(2).eachOfLeds(2);
 		sut.switchLed(0, RED);
 		verifySwitched(ring(0), 0, RED);
 		verifyNoLedSwitched(ring(1));
@@ -57,7 +55,7 @@ class LevelMetersTest {
 
 	@Test
 	void whenSwitchingLed2_Led0OnRing1IsSwitched() {
-		sut = createSut(rings(2).withLeds(2));
+		givenRings(2).eachOfLeds(2);
 		sut.switchLed(2, GREEN);
 		verifyNoLedSwitched(ring(0));
 		verifySwitched(ring(1), 0, GREEN);
@@ -65,19 +63,21 @@ class LevelMetersTest {
 
 	@Test
 	void whenSwitchingLed3_Led1OnRing1IsSwitched() {
-		sut = createSut(rings(2).withLeds(2));
+		givenRings(2).eachOfLeds(2);
 		sut.switchLed(3, BLUE);
 		verifyNoLedSwitched(ring(0));
 		verifySwitched(ring(1), 1, BLUE);
 	}
 
-	LedStrip createSut(List<LevelMeter> levelMeters) {
-		this.levelMeters = levelMeters;
-		return new LedStrip(levelMeters);
+	LevelMeter ring(int ringNumber) {
+		return skip(sut.iterator(), ringNumber);
 	}
 
-	LevelMeter ring(int ring) {
-		return levelMeters.get(ring);
+	private static <T> T skip(Iterator<T> iterator, int count) {
+		for (int i = 0; i < count; i++) {
+			iterator.next();
+		}
+		return iterator.next();
 	}
 
 	void verifySwitched(LevelMeter levelMeter, int led, Color color) {
