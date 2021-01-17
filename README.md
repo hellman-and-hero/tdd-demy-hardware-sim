@@ -3,7 +3,7 @@
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=hellman-and-hero/tdd-demy-hardware-sim)](https://dependabot.com)
 
 A software simulation of the "TDD demystified" hardware.
-run ```mvn exec:java``` for running with defaults or run ```mvn exec:java -Dexec.args="-h"``` to show help listing possible options. 
+run ```./mvnw package exec:java``` for running with defaults or run ```./mvnw package exec:java -Dexec.args="-h"``` to show help listing possible options. 
 
 Like the real hardware, the simulated hardware connects to the MQTT broker (see help on how broker/port can be configured). The individual leds can then be switched with an MQTT message with the topic ```"some/led/<insert led number>/rgb"``` and messe payload contatining the color in hex representation, e.g. ```#FF0000``` for red and ```#000000``` for black (=off)
 
