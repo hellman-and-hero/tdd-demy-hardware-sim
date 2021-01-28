@@ -68,14 +68,17 @@ public class HardwareSimulater {
 			}
 		});
 
-		JPanel panel = new JPanel();
-		frame.getContentPane().add(panel);
-
 		frame.setLayout(new FlowLayout());
-		levelMeters.forEach(panel::add);
+		frame.getContentPane().add(panel());
 		frame.pack();
 		frame.setResizable(false);
 		frame.setVisible(true);
+	}
+
+	private JPanel panel() {
+		JPanel panel = new JPanel();
+		levelMeters.forEach(panel::add);
+		return panel;
 	}
 
 	private void consume(Message message) {

@@ -29,9 +29,9 @@ public class JLevelMeter extends JPanel implements LevelMeter {
 	private int ledSize = DEFAULT_LED_SIZE;
 
 	public JLevelMeter(int leds) {
+		setLayout(null);
 		ledColors = new Color[leds];
 		fill(ledColors, BLACK);
-		setLayout(null);
 		sizes();
 	}
 
