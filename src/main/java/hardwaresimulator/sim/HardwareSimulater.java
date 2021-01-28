@@ -1,6 +1,5 @@
 package hardwaresimulator.sim;
 
-import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
@@ -40,12 +39,13 @@ public class HardwareSimulater {
 
 	private final MqttConsumer mqtt;
 	private final LedStrip ledStrip;
-	private final Pattern topicPattern = compile("some/led/(\\d+)/rgb");
+	private final String topicPrefix = "some/led/";
+	private final Pattern topicPattern = compile(topicPrefix + "(\\d+)/rgb");
 	private List<JLevelMeter> levelMeters;
 
 	public HardwareSimulater(Config config) {
 		try {
-			mqtt = new MqttConsumer(config.mqttHost(), config.mqttPort());
+			mqtt = new MqttConsumer(config.mqttHost(), config.mqttPort(), topicPrefix + "#");
 			mqtt.addConsumer(this::consume);
 			levelMeters = range(0, config.rings()).mapToObj(i -> newLevelMeter(config)).collect(toList());
 			ledStrip = new LedStrip(levelMeters);
@@ -79,7 +79,10 @@ public class HardwareSimulater {
 	}
 
 	private void consume(Message message) {
-		System.out.println(format("Received %s %s", message.getTopic(), message.getPayload()));
+		// we could debug, but if a team fails sending the right messages we do not want
+		// to be too verbose ;-)
+		// System.out.format("Received %s %s\n", message.getTopic(),
+		// message.getPayload());
 		Matcher matcher = topicPattern.matcher(message.getTopic());
 		if (matcher.matches()) {
 			ledStrip.switchLed(Integer.parseInt(matcher.group(1)), Color.decode(message.getPayload()));

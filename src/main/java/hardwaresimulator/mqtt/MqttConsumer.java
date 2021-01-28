@@ -22,19 +22,24 @@ public class MqttConsumer implements Closeable {
 	private final MqttClient mqttClient;
 	private final List<Consumer<Message>> consumers = new CopyOnWriteArrayList<>();
 
-	public MqttConsumer(String host, int port) throws IOException {
+	public MqttConsumer(String host, int port, String topic) throws IOException {
 		try {
 			mqttClient = new MqttClient("tcp://" + host + ":" + port,
 					getClass().getName() + "-" + System.currentTimeMillis(), new MemoryPersistence());
 			mqttClient.setTimeToWait(SECONDS.toMillis(1));
-			mqttClient.setCallback(callback());
+			mqttClient.setCallback(callback(() -> subscribe(topic)));
 			mqttClient.connect(connectOptions());
 		} catch (MqttException e) {
 			throw new IOException(e);
 		}
 	}
 
-	private MqttCallback callback() {
+	@FunctionalInterface
+	public interface OnConnect {
+		void onConnect() throws Exception;
+	}
+
+	private MqttCallback callback(OnConnect onConnect) {
 		return new MqttCallbackExtended() {
 			@Override
 			public void messageArrived(String topic, MqttMessage message) throws Exception {
@@ -60,8 +65,8 @@ public class MqttConsumer implements Closeable {
 			@Override
 			public void connectComplete(boolean reconnect, String serverURI) {
 				try {
-					subscribe();
-				} catch (MqttException e) {
+					onConnect.onConnect();
+				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			}
@@ -74,8 +79,8 @@ public class MqttConsumer implements Closeable {
 		return mqttConnectOptions;
 	}
 
-	private void subscribe() throws MqttException {
-		mqttClient.subscribe("#");
+	private void subscribe(String topic) throws MqttException {
+		mqttClient.subscribe(topic);
 	}
 
 	@Override
