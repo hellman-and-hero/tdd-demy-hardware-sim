@@ -1,5 +1,7 @@
 package hardwaresimulator.sim;
 
+import static java.awt.Color.decode;
+import static java.lang.Integer.parseInt;
 import static java.util.regex.Pattern.compile;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
@@ -88,8 +90,12 @@ public class HardwareSimulater {
 		// message.getPayload());
 		Matcher matcher = topicPattern.matcher(message.getTopic());
 		if (matcher.matches()) {
-			ledStrip.switchLed(Integer.parseInt(matcher.group(1)), Color.decode(message.getPayload()));
+			invokeLater(() -> switchLed(parseInt(matcher.group(1)), decode(message.getPayload())));
 		}
+	}
+
+	private void switchLed(int led, Color color) {
+		ledStrip.switchLed(led, color);
 	}
 
 	private JLevelMeter newLevelMeter(Config config) {
