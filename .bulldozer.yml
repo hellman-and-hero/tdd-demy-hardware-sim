@@ -1,103 +1,102 @@
-# Options for the http server
-server:
-  # The listen address. Can also be set by the BULLDOZER_ADDRESS environment
-  # variable.
-  address: "0.0.0.0"
-  # The listen port. Can also be set by the BULLDOZER_PORT environment
-  # variable.
-  port: 8080
-  # Uncomment the "tls_config" block to enable HTTPS support in the server.
-  # The cert and key files must be usable by net/http.ListenAndServeTLS().
-  # Cert and Key file can also be set by the BULLDOZER_TLS_CERT_FILE and
-  # BULLDOZER_TLS_KEY_FILE environment variables, respectively.
-  # tls_config:
-  #   cert_file: /path/to/server.pem
-  #   key_file: /path/to/server.key
+# "version" is the configuration version, currently "1".
+version: 1
 
-# Options for logging output
-logging:
-  # If true, logs are printed in human-readable form. We recommend using
-  # "false" to output JSON-formatted logs in production
-  text: false
+# "merge" defines how and when pull requests are merged. If the section is
+# missing, bulldozer will consider all pull requests and use default settings.
+merge:
+  # "trigger" defines the set of pull requests considered by bulldozer. If
+  # the section is missing, bulldozer considers all pull requests not excluded
+  # by the ignore conditions.
+  trigger:
+    # Pull requests with any of these labels (case-insensitive) are added to
+    # the trigger.
+    ### labels: ["merge when ready"]
 
-  # Set a minimum logging level threshold
-  # Choose from: debug, info, warn, error
-  level: debug
+    # Pull requests where the body or any comment contains any of these
+    # substrings are added to the trigger.
+    ### comment_substrings: ["==MERGE_WHEN_READY=="]
 
-# Options for the GitHub response cache. When the cache reaches max_size, the
-# oldest entries are evicted. Size properties can use any format supported by
-# https://github.com/c2h5oh/datasize
-#
-# cache:
-#   max_size: "50MB"
+    # Pull requests where any comment matches one of these exact strings are
+    # added to the trigger.
+    ### comments: ["Please merge this pull request!"]
 
-# Options for webhook processing workers. Events are dropped if the queue is
-# full. The defaults are shown below.
-#
-# workers:
-#   workers: 10
-#   queue_size: 100
+    # Pull requests where the body contains any of these substrings are added
+    # to the trigger.
+    ### pr_body_substrings: ["==MERGE_WHEN_READY=="]
 
-# Options for connecting to GitHub
-github:
-  # The URL of the GitHub homepage. Can also be set by the GITHUB_WEB_URL
-  # environment variable.
-  web_url: "https://github.com"
-  # The base URL for v3 (REST) API requests. Can also be set by the
-  # GITHUB_V3_API_URL environment variable.
-  v3_api_url: "https://api.github.com"
-  app:
-    # The integration ID of the GitHub app. Can also be set by the
-    # GITHUB_APP_INTEGRATION_ID environment variable.
-    integration_id: 1
-    # A random string used to validate webhooks. Can also be set by the
-    # GITHUB_APP_WEBHOOK_SECRET environment variable.
-    webhook_secret: "app_secret"
-    # The private key of the GitHub app (.pem file download from GitHub). Can
-    # also be set by the GITHUB_APP_PRIVATE_KEY environment variable.
-    private_key: |
-      -----BEGIN RSA PRIVATE KEY-----
-      xxxxx
-      xxxxx
-      xxxxx
-      -----END RSA PRIVATE KEY-----
+    # Pull requests targeting any of these branches are added to the trigger.
+    branches: ["master"]
 
-# Options for application behavior
-options:
-  # The path within repositories to find the bulldozer.yml config file
-  configuration_path: .bulldozer.yml
+    # Pull requests targeting branches matching any of these regular expressions are added to the trigger.
+    ### branch_patterns: ["feature/.*"]
 
-  # The name of the application. This will affect the User-Agent header
-  # when making requests to Github.
-  app_name: bulldozer
+  # "ignore" defines the set of pull request ignored by bulldozer. If the
+  # section is missing, bulldozer considers all pull requests. It takes the
+  # same keys as the "trigger" section.
+  ignore:
+    labels: ["do not merge"]
+    comment_substrings: ["==DO_NOT_MERGE=="]
 
-  # Deprecated: An optional personal access token associated with a GitHub user
-  # that is used to merge pull requests into protected branches with push
-  # restrictions. Can also be set by the BULLDOZER_PUSH_RESTRICTION_USER_TOKEN
-  # environment variable.
-  #
-  # This is not necessary on GitHub.com and GitHub Enterprise 2.20+, which
-  # allow applications in the push restriction list.
-  #
-  # push_restriction_user_token: token
+  # "method" defines the merge method. The available options are "merge",
+  # "rebase", "squash", and "ff-only".
+  ### method: squash
+  method: rebase
 
-  # A default repository configuration to use if a repository does not define a
-  # configuration. The format is the same as the bulldozer.yml file. If unset
-  # (the default), Bulldozer ignores repositories that are missing a
-  # configuration file.
-  #
-  # default_repository_config:
-  #   merge:
-  #     ignore:
-  #       labels: ["do not merge"]
+  # Allows the merge method that is used when auto-merging a PR to be different based on the
+  # target branch. The keys of the hash are the target branch name, and the values are the merge method that
+  # will be used for PRs targeting that branch. The valid values are the same as for the "method" key.
+  # Note: If the target branch does not match any of the specified keys, the "method" key is used instead.
+  ### branch_method:
+    ### develop: squash
+    ### master: merge
 
-# Optional configuration to emit metrics to datadog
-datadog:
-  # Database endpoint
-  address: "127.0.0.1:8125"
-  # The metric flush frequency. Accepts any string
-  # parseable by https://golang.org/pkg/time/#ParseDuration
-  interval: "10s"
-  # Tags to include
-  tags:
-    - "bulldozer"
+  # "options" defines additional options for the individual merge methods.
+  options:
+    # "squash" options are only used when the merge method is "squash"
+    squash:
+      # "title" defines how the title of the commit message is created when
+      # generating a squash commit. The options are "pull_request_title",
+      # "first_commit_title", and "github_default_title". The default is
+      # "pull_request_title".
+      title: "pull_request_title"
+
+      # "body" defines how the body of the commit message is created when
+      # generating a squash commit. The options are "pull_request_body",
+      # "summarize_commits", and "empty_body". The default is "empty_body".
+      body: "empty_body"
+
+      # If "body" is "pull_request_body", then the commit message will be the
+      # part of the pull request body surrounded by "message_delimiter"
+      # strings. This is disabled (empty string) by default.
+      message_delimiter: ==COMMIT_MSG==
+
+  # "required_statuses" is a list of additional status contexts that must pass
+  # before bulldozer can merge a pull request. This is useful if you want to
+  # require extra testing for automated merges, but not for manual merges.
+  ### required_statuses:
+  ###   - "ci/circleci: ete-tests"
+
+  # If true, bulldozer will delete branches after their pull requests merge.
+  delete_after_merge: true
+
+  # If true, bulldozer will merge pull requests with no required checks. This
+  # helps to protect against merging branches which inadvertently do not have
+  # required status checks.
+  allow_merge_with_no_checks: false
+
+# "update" defines how and when to update pull request branches. Unlike with
+# merges, if this section is missing, bulldozer will not update any pull requests.
+update:
+  # "trigger" defines the set of pull requests that should be updated by
+  # bulldozer. It accepts the same keys as the trigger in the "merge" block.
+  trigger:
+    labels: ["WIP", "Update Me"]
+
+  # "ignore" defines the set of pull requests that should not be updated by
+  # bulldozer. It accepts the same keys as the ignore in the "merge" block.
+  ignore:
+    labels: ["Do Not Update"]
+
+  # If true, bulldozer will ignore updating draft pull requests, unless they
+  # explicitly match a configured trigger condition.
+  ignore_drafts: false
