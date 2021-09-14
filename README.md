@@ -1,5 +1,5 @@
 # tdd-demy-hardware-sim
-[![Build Status](https://app.travis-ci.com/hellman-and-hero/tdd-demy-hardware-sim.svg?branch=master)](https://app.travis-ci.com/hellman-and-hero/tdd-demy-hardware-sim)
+[![Build Status](https://github.com/hellman-and-hero/tdd-demy-hardware-sim/actions/workflows/maven.yml/badge.svg)](https://github.com/hellman-and-hero/tdd-demy-hardware-sim/actions/workflows/maven.yml)
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=hellman-and-hero/tdd-demy-hardware-sim)](https://dependabot.com)
 
 A software simulation of the "TDD demystified" hardware.
