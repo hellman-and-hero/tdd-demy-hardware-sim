@@ -10,17 +10,22 @@ import java.awt.Color;
 
 import org.approvaltests.awt.AwtApprovals;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
 class LevelMeterApprovalTest {
+
+	private static final String IS_HEADLESS = "java.awt.GraphicsEnvironment#isHeadless";
 
 	JLevelMeter sut = new JLevelMeter(16);
 
 	@Test
+	@DisabledIf(IS_HEADLESS)
 	void noInteraction() {
 		AwtApprovals.verify(sut);
 	}
 
 	@Test
+	@DisabledIf(IS_HEADLESS)
 	void someColors() {
 		for (int i = 0; i < sut.getLedCount() - 2; i++) {
 			sut.setColor(i, color(i));
@@ -29,6 +34,7 @@ class LevelMeterApprovalTest {
 	}
 
 	@Test
+	@DisabledIf(IS_HEADLESS)
 	void checkBackgroundColorRepaintedCorrectly() {
 		for (int i = 0; i < sut.getLedCount(); i++) {
 			sut.setColor(i, color(i));
