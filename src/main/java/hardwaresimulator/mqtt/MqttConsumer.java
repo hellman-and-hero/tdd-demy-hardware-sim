@@ -42,7 +42,7 @@ public class MqttConsumer implements Closeable {
 	private MqttCallback callback(OnConnect onConnect) {
 		return new MqttCallbackExtended() {
 			@Override
-			public void messageArrived(String topic, MqttMessage message) throws Exception {
+			public void messageArrived(String topic, MqttMessage message) {
 				messageArrived(convert(topic, message));
 			}
 

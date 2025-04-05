@@ -3,7 +3,6 @@ package hardwaresimulator.sim;
 import static hardwaresimulator.sim.Led.led;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 public class LedStrip {
@@ -11,7 +10,7 @@ public class LedStrip {
 	private final List<LevelMeter> levelMeters;
 
 	public LedStrip(List<? extends LevelMeter> levelMeters) {
-		this.levelMeters = new ArrayList<>(levelMeters);
+		this.levelMeters = List.copyOf(levelMeters);
 	}
 
 	public boolean switchLed(Led led, Color color) {

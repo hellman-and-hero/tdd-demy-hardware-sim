@@ -2,7 +2,6 @@ package hardwaresimulator.sim;
 
 import static java.awt.Color.decode;
 import static java.util.regex.Pattern.compile;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static javax.swing.SwingUtilities.invokeLater;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
@@ -42,15 +41,15 @@ public class HardwareSimulater {
 	private final LedStrip ledStrip;
 	private final String topicPrefix = "some/led/";
 	private final Pattern topicPattern = compile(topicPrefix + "(\\d+)/rgb");
-	private List<JLevelMeter> levelMeters;
+	private final List<JLevelMeter> levelMeters;
 
 	public HardwareSimulater(Config config) {
 		try {
 			mqtt = new MqttConsumer(config.mqttHost(), config.mqttPort(), topicPrefix + "#");
 			mqtt.addConsumer(this::consume);
-			levelMeters = range(0, config.rings()).mapToObj(i -> newLevelMeter(config)).collect(toList());
+			levelMeters = range(0, config.rings()).mapToObj(i -> newLevelMeter(config)).toList();
 			ledStrip = new LedStrip(levelMeters);
-			invokeLater(() -> createAndShowGUI());
+			invokeLater(this::createAndShowGUI);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

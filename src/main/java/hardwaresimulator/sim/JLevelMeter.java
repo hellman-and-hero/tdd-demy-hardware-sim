@@ -15,11 +15,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
+import java.io.Serial;
 
 import javax.swing.JPanel;
 
 public class JLevelMeter extends JPanel implements LevelMeter {
 
+	@Serial
 	private static final long serialVersionUID = 7567178446520016358L;
 
 	public static final int DEFAULT_RING_SIZE = 200;
@@ -108,16 +110,16 @@ public class JLevelMeter extends JPanel implements LevelMeter {
 	}
 
 	private Point ledCoordinates(int step) {
-		double t = 2 * PI * (step + 1 + (ledColors.length / 4)) / ledColors.length;
+		double t = 2 * PI * (step + 1 + ((double) ledColors.length / 4)) / ledColors.length;
 		return new Point(x(t), y(t));
 	}
 
 	private int x(double t) {
-		return (int) (width / 2 + radius * cos(t));
+		return (int) ((double) width / 2 + radius * cos(t));
 	}
 
 	private int y(double t) {
-		return (int) (height / 2 + radius * sin(t));
+		return (int) ((double) height / 2 + radius * sin(t));
 	}
 
 	@Override
