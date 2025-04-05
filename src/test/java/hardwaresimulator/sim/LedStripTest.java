@@ -5,6 +5,7 @@ import static java.awt.Color.GREEN;
 import static java.awt.Color.RED;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -50,7 +51,7 @@ class LedStripTest {
 	@Test
 	void whenSwitchingLed0_Led0OnRing0IsSwitched() {
 		givenRings(2).eachOfLeds(2);
-		sut.switchLed(0, RED);
+		assertThat(sut.switchLed(0, RED)).isTrue();
 		verifySwitched(ring(0), 0, RED);
 		verifyNoLedSwitched(ring(1));
 	}
@@ -58,7 +59,7 @@ class LedStripTest {
 	@Test
 	void whenSwitchingLed2_Led0OnRing1IsSwitched() {
 		givenRings(2).eachOfLeds(2);
-		sut.switchLed(2, GREEN);
+		assertThat(sut.switchLed(2, GREEN)).isTrue();
 		verifyNoLedSwitched(ring(0));
 		verifySwitched(ring(1), 0, GREEN);
 	}
@@ -66,15 +67,15 @@ class LedStripTest {
 	@Test
 	void whenSwitchingLed3_Led1OnRing1IsSwitched() {
 		givenRings(2).eachOfLeds(2);
-		sut.switchLed(3, BLUE);
+		assertThat(sut.switchLed(3, BLUE)).isTrue();
 		verifyNoLedSwitched(ring(0));
 		verifySwitched(ring(1), 1, BLUE);
 	}
 
 	@Test
-	void whenSwitchingOutOfRange_NothingHappens() {
+	void whenSwitchingOutOfRange_NothingHappensAndFalseIsReturned() {
 		givenRings(2).eachOfLeds(2);
-		sut.switchLed(4, BLUE);
+		assertThat(sut.switchLed(4, BLUE)).isFalse();
 		verifyNoLedSwitched(ring(0));
 		verifyNoLedSwitched(ring(1));
 	}
