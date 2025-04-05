@@ -1,5 +1,6 @@
 package hardwaresimulator.sim;
 
+import static hardwaresimulator.sim.Led.led;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.GREEN;
 import static java.awt.Color.ORANGE;
@@ -28,7 +29,7 @@ class LevelMeterApprovalTest {
 	@DisabledIf(IS_HEADLESS)
 	void someColors() {
 		for (int i = 0; i < sut.getLedCount() - 2; i++) {
-			sut.setColor(i, color(i));
+			sut.setColor(led(i), color(i));
 		}
 		AwtApprovals.verify(sut);
 	}
@@ -37,11 +38,11 @@ class LevelMeterApprovalTest {
 	@DisabledIf(IS_HEADLESS)
 	void checkBackgroundColorRepaintedCorrectly() {
 		for (int i = 0; i < sut.getLedCount(); i++) {
-			sut.setColor(i, color(i));
+			sut.setColor(led(i), color(i));
 		}
 
 		for (int i = 0; i < sut.getLedCount(); i++) {
-			sut.setColor(i, BLACK);
+			sut.setColor(led(i), BLACK);
 		}
 		AwtApprovals.verify(sut);
 	}

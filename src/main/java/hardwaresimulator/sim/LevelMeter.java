@@ -4,7 +4,7 @@ import java.awt.Color;
 
 public interface LevelMeter {
 
-	void setColor(int led, Color color);
+	void setColor(Led led, Color color);
 
 	int getLedCount();
 

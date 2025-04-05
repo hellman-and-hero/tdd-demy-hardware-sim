@@ -1,5 +1,7 @@
 package hardwaresimulator.sim;
 
+import static hardwaresimulator.sim.Led.led;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,16 +14,15 @@ public class LedStrip {
 		this.levelMeters = new ArrayList<>(levelMeters);
 	}
 
-	public boolean switchLed(int led, Color color) {
-		if (led >= 0) {
-			for (LevelMeter levelMeter : levelMeters) {
-				int ledsOnRing = levelMeter.getLedCount();
-				if (led < ledsOnRing) {
-					levelMeter.setColor(led, color);
-					return true;
-				}
-				led -= ledsOnRing;
+	public boolean switchLed(Led led, Color color) {
+		int index = led.index();
+		for (LevelMeter levelMeter : levelMeters) {
+			int ledsOnRing = levelMeter.getLedCount();
+			if (index < ledsOnRing) {
+				levelMeter.setColor(led(index), color);
+				return true;
 			}
+			index -= ledsOnRing;
 		}
 		return false;
 	}

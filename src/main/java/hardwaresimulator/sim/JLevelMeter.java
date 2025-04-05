@@ -61,8 +61,8 @@ public class JLevelMeter extends JPanel implements LevelMeter {
 	}
 
 	@Override
-	public void setColor(int led, Color color) {
-		ledColors[led] = isOffColor(color) ? BG_COLOR : color;
+	public void setColor(Led led, Color color) {
+		ledColors[led.index()] = isOffColor(color) ? BG_COLOR : color;
 		repaint();
 	}
 
