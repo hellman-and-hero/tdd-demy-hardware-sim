@@ -69,6 +69,14 @@ class LevelMetersTest {
 		verifySwitched(ring(1), 1, BLUE);
 	}
 
+	@Test
+	void whenSwitchingOutOfRange_NothingHappens() {
+		givenRings(2).eachOfLeds(2);
+		sut.switchLed(4, BLUE);
+		verifyNoLedSwitched(ring(0));
+		verifyNoLedSwitched(ring(1));
+	}
+
 	LevelMeter ring(int ringNumber) {
 		return skip(sut.iterator(), ringNumber);
 	}
