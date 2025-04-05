@@ -1,6 +1,7 @@
 package hardwaresimulator.sim;
 
 import static java.awt.Color.BLACK;
+import static java.awt.Color.GRAY;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import static java.lang.Math.PI;
@@ -24,6 +25,8 @@ public class JLevelMeter extends JPanel implements LevelMeter {
 	public static final int DEFAULT_RING_SIZE = 200;
 	public static final int DEFAULT_LED_SIZE = 16;
 
+	private static final Color BG_COLOR = GRAY;
+	
 	private final Color[] ledColors;
 	private int width = DEFAULT_RING_SIZE, height = DEFAULT_RING_SIZE;
 	private int radius;
@@ -32,7 +35,7 @@ public class JLevelMeter extends JPanel implements LevelMeter {
 	public JLevelMeter(int leds) {
 		setLayout(null);
 		ledColors = new Color[leds];
-		fill(ledColors, BLACK);
+		fill(ledColors, BG_COLOR);
 		sizes();
 	}
 
@@ -59,8 +62,12 @@ public class JLevelMeter extends JPanel implements LevelMeter {
 
 	@Override
 	public void setColor(int led, Color color) {
-		ledColors[led] = color;
+		ledColors[led] = isOffColor(color) ? BG_COLOR : color;
 		repaint();
+	}
+
+	private static boolean isOffColor(Color color) {
+		return BLACK.equals(color);
 	}
 
 	@Override
