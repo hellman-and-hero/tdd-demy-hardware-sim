@@ -13,16 +13,17 @@ public class LedStrip {
 	}
 
 	public boolean switchLed(int led, Color color) {
-		for (LevelMeter levelMeter : levelMeters) {
-			int ledsOnRing = levelMeter.getLedCount();
-			if (led < ledsOnRing) {
-				levelMeter.setColor(led, color);
-				return true;
+		if (led >= 0) {
+			for (LevelMeter levelMeter : levelMeters) {
+				int ledsOnRing = levelMeter.getLedCount();
+				if (led < ledsOnRing) {
+					levelMeter.setColor(led, color);
+					return true;
+				}
+				led -= ledsOnRing;
 			}
-			led -= ledsOnRing;
 		}
 		return false;
 	}
-
 
 }

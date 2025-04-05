@@ -73,9 +73,17 @@ class LedStripTest {
 	}
 
 	@Test
-	void whenSwitchingOutOfRange_NothingHappensAndFalseIsReturned() {
+	void whenSwitchingUpperOutOfRange_NothingHappensAndFalseIsReturned() {
 		givenRings(2).eachOfLeds(2);
 		assertThat(sut.switchLed(4, BLUE)).isFalse();
+		verifyNoLedSwitched(ring(0));
+		verifyNoLedSwitched(ring(1));
+	}
+
+	@Test
+	void whenSwitchingLowerOutOfRange_NothingHappensAndFalseIsReturned() {
+		givenRings(2).eachOfLeds(2);
+		assertThat(sut.switchLed(-1, BLUE)).isFalse();
 		verifyNoLedSwitched(ring(0));
 		verifyNoLedSwitched(ring(1));
 	}
