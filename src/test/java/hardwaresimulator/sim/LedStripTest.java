@@ -13,11 +13,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
-import java.util.Iterator;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-class LevelMetersTest {
+class LedStripTest {
 
 	class RingBuilder {
 
@@ -28,7 +28,8 @@ class LevelMetersTest {
 		}
 
 		void eachOfLeds(int leds) {
-			sut = new LedStrip(range(0, rings).mapToObj(__ -> levelMeterWithLeds(leds)).collect(toList()));
+			levelMeters = range(0, rings).mapToObj(__ -> levelMeterWithLeds(leds)).collect(toList());
+			sut = new LedStrip(levelMeters);
 		}
 
 		LevelMeter levelMeterWithLeds(int leds) {
@@ -43,6 +44,7 @@ class LevelMetersTest {
 		return new RingBuilder(rings);
 	}
 
+	List<LevelMeter> levelMeters;
 	LedStrip sut;
 
 	@Test
@@ -78,14 +80,7 @@ class LevelMetersTest {
 	}
 
 	LevelMeter ring(int ringNumber) {
-		return skip(sut.iterator(), ringNumber);
-	}
-
-	private static <T> T skip(Iterator<T> iterator, int count) {
-		for (int i = 0; i < count; i++) {
-			iterator.next();
-		}
-		return iterator.next();
+		return levelMeters.get(ringNumber);
 	}
 
 	void verifySwitched(LevelMeter levelMeter, int led, Color color) {

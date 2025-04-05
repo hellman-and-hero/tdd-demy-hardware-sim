@@ -5,17 +5,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class LedStrip implements Iterable<LevelMeter> {
+public class LedStrip {
 
 	private final List<LevelMeter> levelMeters;
 
 	public LedStrip(List<? extends LevelMeter> levelMeters) {
 		this.levelMeters = new ArrayList<>(levelMeters);
-	}
-
-	@Override
-	public Iterator<LevelMeter> iterator() {
-		return levelMeters.iterator();
 	}
 
 	public void switchLed(int led, Color color) {
@@ -28,5 +23,6 @@ public class LedStrip implements Iterable<LevelMeter> {
 			led -= ledsOnRing;
 		}
 	}
+
 
 }
