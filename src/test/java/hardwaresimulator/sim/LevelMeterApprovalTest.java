@@ -18,6 +18,7 @@ class LevelMeterApprovalTest {
 	private static final String IS_HEADLESS = "java.awt.GraphicsEnvironment#isHeadless";
 
 	JLevelMeter sut = new JLevelMeter(16);
+	Color[] colors = new Color[] { GREEN, YELLOW, ORANGE, RED };
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
@@ -29,7 +30,8 @@ class LevelMeterApprovalTest {
 	@DisabledIf(IS_HEADLESS)
 	void someColors() {
 		for (int i = 0; i < sut.getLedCount() - 2; i++) {
-			sut.setColor(led(i), color(i));
+			Led led = led(i);
+			sut.setColor(led, color(led));
 		}
 		AwtApprovals.verify(sut);
 	}
@@ -38,7 +40,8 @@ class LevelMeterApprovalTest {
 	@DisabledIf(IS_HEADLESS)
 	void checkBackgroundColorRepaintedCorrectly() {
 		for (int i = 0; i < sut.getLedCount(); i++) {
-			sut.setColor(led(i), color(i));
+			Led led = led(i);
+			sut.setColor(led, color(led));
 		}
 
 		for (int i = 0; i < sut.getLedCount(); i++) {
@@ -47,16 +50,16 @@ class LevelMeterApprovalTest {
 		AwtApprovals.verify(sut);
 	}
 
-	private Color color(int ledNumber) {
-		if (ledNumber > sut.getLedCount() * 3 / 4) {
-			return RED;
-		} else if (ledNumber > sut.getLedCount() * 2 / 4) {
-			return ORANGE;
-		} else if (ledNumber > sut.getLedCount() * 1 / 4) {
-			return YELLOW;
-		} else {
-			return GREEN;
+	private Color color(Led led) {
+		return colors[zone(led)];
+	}
+
+	private int zone(Led led) {
+		int zone = colors.length - 1;
+		while (zone > 0 && led.index() <= sut.getLedCount() * zone / colors.length) {
+			zone--;
 		}
+		return zone;
 	}
 
 }
