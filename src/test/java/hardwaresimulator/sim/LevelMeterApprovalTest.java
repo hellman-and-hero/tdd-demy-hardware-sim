@@ -8,6 +8,7 @@ import static java.awt.Color.RED;
 import static java.awt.Color.YELLOW;
 
 import java.awt.Color;
+import java.util.function.Function;
 
 import org.approvaltests.awt.AwtApprovals;
 import org.junit.jupiter.api.Test;
@@ -29,28 +30,26 @@ class LevelMeterApprovalTest {
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void someColors() {
-		for (int i = 0; i < sut.getLedCount() - 2; i++) {
-			Led led = led(i);
-			sut.setColor(led, color(led));
-		}
+		colorRing(sut.getLedCount() - 2, this::zoneColor);
 		AwtApprovals.verify(sut);
 	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void checkBackgroundColorRepaintedCorrectly() {
-		for (int i = 0; i < sut.getLedCount(); i++) {
-			Led led = led(i);
-			sut.setColor(led, color(led));
-		}
-
-		for (int i = 0; i < sut.getLedCount(); i++) {
-			sut.setColor(led(i), BLACK);
-		}
+		colorRing(sut.getLedCount(), this::zoneColor);
+		colorRing(sut.getLedCount(), __ -> BLACK);
 		AwtApprovals.verify(sut);
 	}
 
-	private Color color(Led led) {
+	private void colorRing(int max, Function<Led, Color> colorProvider) {
+		for (int i = 0; i < max; i++) {
+			Led led = led(i);
+			sut.setColor(led, colorProvider.apply(led));
+		}
+	}
+
+	private Color zoneColor(Led led) {
 		return colors[zone(led)];
 	}
 
