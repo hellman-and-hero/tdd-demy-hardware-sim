@@ -13,6 +13,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RadialGradientPaint;
 
 import javax.swing.JPanel;
 
@@ -74,8 +75,29 @@ public class JLevelMeter extends JPanel implements LevelMeter {
 
 	private void drawLed(Graphics2D g2, int led) {
 		Point ledCoordinates = ledCoordinates(led);
-		g2.setColor(ledColors[led]);
-		g2.fillOval(ledCoordinates.x - (ledSize / 2), ledCoordinates.y - (ledSize / 2), ledSize, ledSize);
+		int x = ledCoordinates.x - (ledSize / 2);
+		int y = ledCoordinates.y - (ledSize / 2);
+
+		Color baseColor = ledColors[led];
+
+		// Create radial gradient for depth
+		float[] dist = { 0.0f, 1.0f };
+		Color[] colors = { baseColor.brighter(), baseColor.darker() };
+		RadialGradientPaint gradient = new RadialGradientPaint(new Point(ledCoordinates.x, ledCoordinates.y),
+				ledSize / 2f, dist, colors);
+
+		g2.setPaint(gradient);
+		g2.fillOval(x, y, ledSize, ledSize);
+
+		// Draw highlight to simulate glossy surface
+		g2.setPaint(new Color(255, 255, 255, 100));
+		int highlightSize = ledSize / 2;
+		g2.fillOval(x + ledSize / 4, y + ledSize / 4, highlightSize, highlightSize);
+
+		// Outer glow (soft)
+		g2.setPaint(new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 80));
+		int glowSize = ledSize + 6;
+		g2.fillOval(x - 3, y - 3, glowSize, glowSize);
 	}
 
 	private Point ledCoordinates(int step) {
