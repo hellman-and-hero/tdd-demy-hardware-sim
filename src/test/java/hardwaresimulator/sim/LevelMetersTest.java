@@ -8,7 +8,7 @@ import static java.util.stream.IntStream.range;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,7 +28,7 @@ class LevelMetersTest {
 		}
 
 		void eachOfLeds(int leds) {
-			sut = new LedStrip(range(0, rings).mapToObj(i -> levelMeterWithLeds(leds)).collect(toList()));
+			sut = new LedStrip(range(0, rings).mapToObj(__ -> levelMeterWithLeds(leds)).collect(toList()));
 		}
 
 		LevelMeter levelMeterWithLeds(int leds) {
@@ -85,7 +85,7 @@ class LevelMetersTest {
 	}
 
 	void verifyNoLedSwitched(LevelMeter levelMeter) {
-		verify(levelMeter, times(0)).setColor(anyInt(), any(Color.class));
+		verify(levelMeter, never()).setColor(anyInt(), any(Color.class));
 	}
 
 }
