@@ -49,10 +49,14 @@ public class HardwareSimulater {
 			mqtt.addConsumer(this::consume);
 			levelMeters = range(0, config.rings()).mapToObj(__ -> newLevelMeter(config)).toList();
 			ledStrip = new LedStrip(levelMeters);
-			invokeLater(this::createAndShowGUI);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public HardwareSimulater show() {
+		invokeLater(this::createAndShowGUI);
+		return this;
 	}
 
 	private void createAndShowGUI() {
@@ -81,6 +85,10 @@ public class HardwareSimulater {
 		return panel;
 	}
 
+	public boolean isConnected() {
+		return mqtt.isConnected();
+	}
+
 	private void consume(Message message) {
 		// we could debug, but if a team fails sending the right messages we do not want
 		// to be too verbose ;-)
@@ -95,7 +103,7 @@ public class HardwareSimulater {
 		ledStrip.switchLed(led, color);
 	}
 
-	private JLevelMeter newLevelMeter(Config config) {
+	protected JLevelMeter newLevelMeter(Config config) {
 		return new JLevelMeter(config.ledCount()).withSize(config.ringSize()).withLedSize(config.ledSize());
 	}
 

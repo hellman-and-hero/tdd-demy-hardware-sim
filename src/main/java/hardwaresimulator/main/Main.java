@@ -15,7 +15,7 @@ import hardwaresimulator.sim.HardwareSimulater.Config;
 public class Main {
 
 	public static void main(String... args) {
-		createConfig(args).ifPresent(HardwareSimulater::new);
+		createConfig(args).map(HardwareSimulater::new).ifPresent(HardwareSimulater::show);
 	}
 
 	protected static Optional<Config> createConfig(String... args) {
