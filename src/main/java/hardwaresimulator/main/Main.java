@@ -46,39 +46,10 @@ public class Main {
 	}
 
 	private static Config argsAdapter(Args4JCmdLineArguments args) {
-		return new Config() {
-
-			@Override
-			public String mqttHost() {
-				return args.mqttHost;
-			}
-
-			@Override
-			public int mqttPort() {
-				return args.mqttPort;
-			}
-
-			@Override
-			public int rings() {
-				return args.rings;
-			}
-
-			@Override
-			public int ledCount() {
-				return args.ledCount;
-			}
-
-			@Override
-			public int ringSize() {
-				return args.ringSize;
-			}
-
-			@Override
-			public int ledSize() {
-				return args.ledSize;
-			}
-
-		};
+		record ConfigAdapter(String mqttHost, int mqttPort, int rings, int ledCount, int ringSize, int ledSize)
+				implements Config {
+		}
+		return new ConfigAdapter(args.mqttHost, args.mqttPort, args.rings, args.ledCount, args.ringSize, args.ledSize);
 	}
 
 }

@@ -4,7 +4,7 @@ import static com.github.stefanbirkner.systemlambda.SystemLambda.assertNothingWr
 import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemErr;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.List;
 
@@ -45,20 +45,20 @@ class MainTest {
 
 		assertNothingWrittenToSystemErr(() -> {
 			Config config = execSut(args);
-			assertAll( //
-					() -> assertThat(config.mqttHost()).isEqualTo("a"), //
-					() -> assertThat(config.mqttPort()).isEqualTo(1), //
-					() -> assertThat(config.rings()).isEqualTo(2), //
-					() -> assertThat(config.ringSize()).isEqualTo(3), //
-					() -> assertThat(config.ledCount()).isEqualTo(4), //
-					() -> assertThat(config.ledSize()).isEqualTo(5) //
-			);
+			assertSoftly(s -> {
+				s.assertThat(config.mqttHost()).isEqualTo("a");
+				s.assertThat(config.mqttPort()).isEqualTo(1);
+				s.assertThat(config.rings()).isEqualTo(2);
+				s.assertThat(config.ringSize()).isEqualTo(3);
+				s.assertThat(config.ledCount()).isEqualTo(4);
+				s.assertThat(config.ledSize()).isEqualTo(5);
+			});
 		});
 
 	}
 
 	private Config execSut(List<String> args) {
-		return Main.createConfig(args.toArray(new String[0])).orElse(null);
+		return Main.createConfig(args.toArray(String[]::new)).orElse(null);
 	}
 
 }
