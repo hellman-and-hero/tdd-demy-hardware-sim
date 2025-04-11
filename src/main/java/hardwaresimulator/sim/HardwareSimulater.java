@@ -59,7 +59,7 @@ public class HardwareSimulater {
 		JFrame frame = new JFrame("Hardware Simulator");
 		frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent ev) {
+			public void windowClosing(WindowEvent __) {
 				try {
 					mqtt.close();
 				} catch (IOException e) {
