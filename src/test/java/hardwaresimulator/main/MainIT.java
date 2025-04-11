@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import hardwaresimulator.main.Main.ConfigAdapter;
 import hardwaresimulator.sim.HardwareSimulater;
+import hardwaresimulator.sim.HardwareSimulater.Config;
 import hardwaresimulator.sim.JLevelMeter;
 import hardwaresimulator.sim.Led;
 
@@ -53,11 +54,11 @@ class MainIT {
 	}
 
 	private static HardwareSimulater createSut(MqttBroker broker) {
-		ConfigAdapter config = new ConfigAdapter(broker.host(), broker.port(), 2, LED_COUNT, 0, 0);
+		Config config = new ConfigAdapter(broker.host(), broker.port(), 2, LED_COUNT, 0, 0);
 		HardwareSimulater hardwareSimulater = new HardwareSimulater(config) {
 			@Override
 			protected JLevelMeter newLevelMeter(Config config) {
-				JLevelMeter mock = spy(new JLevelMeter(config.ledCount()) {
+				return spy(new JLevelMeter(config.ledCount()) {
 
 					private static final long serialVersionUID = 1L;
 
@@ -66,7 +67,6 @@ class MainIT {
 						// no-op
 					}
 				});
-				return mock;
 			}
 		};
 		await().until(hardwareSimulater::isConnected);
