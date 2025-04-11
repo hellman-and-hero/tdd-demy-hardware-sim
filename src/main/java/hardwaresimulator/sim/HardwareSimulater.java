@@ -25,10 +25,15 @@ public class HardwareSimulater {
 
 	public interface Config {
 		String mqttHost();
+
 		int mqttPort();
+
 		int rings();
+
 		int ledCount();
+
 		int ringSize();
+
 		int ledSize();
 	}
 
@@ -79,8 +84,7 @@ public class HardwareSimulater {
 	private void consume(Message message) {
 		// we could debug, but if a team fails sending the right messages we do not want
 		// to be too verbose ;-)
-		// System.out.format("Received %s %s\n", message.getTopic(),
-		// message.getPayload());
+		// System.out.format("Received %s %s\n", message.topic(), message.payload());
 		Matcher matcher = topicPattern.matcher(message.topic());
 		if (matcher.matches()) {
 			invokeLater(() -> switchLed(Led.fromString(matcher.group(1)), decode(message.payload())));

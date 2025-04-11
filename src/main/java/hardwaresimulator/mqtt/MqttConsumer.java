@@ -60,7 +60,7 @@ public class MqttConsumer implements Closeable {
 			}
 
 			private Message convert(String topic, MqttMessage mqttMessage) {
-				return new Message(topic, mqttMessage.getPayload(), mqttMessage.isRetained());
+				return new Message(topic, new String(mqttMessage.getPayload()), mqttMessage.isRetained());
 			}
 
 			@Override
