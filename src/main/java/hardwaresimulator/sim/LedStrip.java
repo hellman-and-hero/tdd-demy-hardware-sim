@@ -15,6 +15,7 @@ public class LedStrip {
 
 	public boolean switchLed(Led led, Color color) {
 		int index = led.index();
+		assert index >= 0 : "expect led index not to be negative but was " + index;
 		for (LevelMeter levelMeter : levelMeters) {
 			int ledsOnRing = levelMeter.getLedCount();
 			if (index < ledsOnRing) {

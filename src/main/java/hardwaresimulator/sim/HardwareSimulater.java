@@ -86,9 +86,9 @@ public class HardwareSimulater {
 		// to be too verbose ;-)
 		// System.out.format("Received %s %s\n", message.getTopic(),
 		// message.getPayload());
-		Matcher matcher = topicPattern.matcher(message.getTopic());
+		Matcher matcher = topicPattern.matcher(message.topic());
 		if (matcher.matches()) {
-			invokeLater(() -> switchLed(Led.fromString(matcher.group(1)), decode(message.getPayload())));
+			invokeLater(() -> switchLed(Led.fromString(matcher.group(1)), decode(message.payload())));
 		}
 	}
 

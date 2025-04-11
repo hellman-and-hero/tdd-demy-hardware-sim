@@ -3,7 +3,6 @@ package hardwaresimulator.main;
 import static org.kohsuke.args4j.OptionHandlerFilter.ALL;
 import static org.kohsuke.args4j.ParserProperties.defaults;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import org.kohsuke.args4j.CmdLineException;

@@ -1,5 +1,7 @@
 package hardwaresimulator.mqtt;
 
+import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.Closeable;
@@ -24,8 +26,7 @@ public class MqttConsumer implements Closeable {
 
 	public MqttConsumer(String host, int port, String topic) throws IOException {
 		try {
-			mqttClient = new MqttClient("tcp://" + host + ":" + port,
-					getClass().getName() + "-" + System.currentTimeMillis(), new MemoryPersistence());
+			mqttClient = new MqttClient(serverURI(host, port), clientId(), new MemoryPersistence());
 			mqttClient.setTimeToWait(SECONDS.toMillis(1));
 			mqttClient.setCallback(callback(() -> subscribe(topic)));
 			mqttClient.connect(connectOptions());
@@ -39,6 +40,14 @@ public class MqttConsumer implements Closeable {
 		void onConnect() throws Exception;
 	}
 
+	private String serverURI(String host, int port) {
+		return format("tcp://%s:%d", host, port);
+	}
+
+	private String clientId() {
+		return format("%s-%d", getClass().getName(), currentTimeMillis());
+	}
+
 	private MqttCallback callback(OnConnect onConnect) {
 		return new MqttCallbackExtended() {
 			@Override
@@ -47,11 +56,11 @@ public class MqttConsumer implements Closeable {
 			}
 
 			private void messageArrived(Message message) {
-				consumers.forEach(consumer -> consumer.accept(message));
+				consumers.forEach(c -> c.accept(message));
 			}
 
 			private Message convert(String topic, MqttMessage mqttMessage) {
-				return new Message(topic, new String(mqttMessage.getPayload()), false);
+				return new Message(topic, mqttMessage.getPayload(), mqttMessage.isRetained());
 			}
 
 			@Override
