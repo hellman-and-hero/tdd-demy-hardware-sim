@@ -45,10 +45,11 @@ public class Main {
 		System.err.println("  Example: java " + mainClassName + parser.printExample(ALL));
 	}
 
+	public static record ConfigAdapter(String mqttHost, int mqttPort, int rings, int ledCount, int ringSize,
+			int ledSize) implements Config {
+	}
+
 	private static Config argsAdapter(Args4JCmdLineArguments args) {
-		record ConfigAdapter(String mqttHost, int mqttPort, int rings, int ledCount, int ringSize, int ledSize)
-				implements Config {
-		}
 		return new ConfigAdapter(args.mqttHost, args.mqttPort, args.rings, args.ledCount, args.ringSize, args.ledSize);
 	}
 

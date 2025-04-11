@@ -8,15 +8,15 @@ import static hardwaresimulator.main.MainTest.Params.LED_SIZE;
 import static hardwaresimulator.main.MainTest.Params.MQTT_HOST;
 import static hardwaresimulator.main.MainTest.Params.MQTT_PORT;
 import static hardwaresimulator.main.MainTest.Params.RING_SIZE;
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import hardwaresimulator.main.Main.ConfigAdapter;
 import hardwaresimulator.sim.HardwareSimulater.Config;
 
 class MainTest {
@@ -51,27 +51,16 @@ class MainTest {
 
 	@Test
 	void canSetAllOptions() throws Exception {
-		List<String> args = asList( //
-				param(MQTT_HOST), "a", //
-				param(MQTT_PORT), "1", //
-				param(LED_RINGS), "2", //
-				param(RING_SIZE), "3", //
-				param(LED_COUNT), "4", //
-				param(LED_SIZE), "5" //
-		);
-
-		assertNothingWrittenToSystemErr(() -> {
-			Config config = parseArgs(args);
-			assertSoftly(s -> {
-				s.assertThat(config.mqttHost()).isEqualTo("a");
-				s.assertThat(config.mqttPort()).isEqualTo(1);
-				s.assertThat(config.rings()).isEqualTo(2);
-				s.assertThat(config.ringSize()).isEqualTo(3);
-				s.assertThat(config.ledCount()).isEqualTo(4);
-				s.assertThat(config.ledSize()).isEqualTo(5);
-			});
-		});
-
+		Config expectedConfig = new ConfigAdapter("a", 1, 2, 3, 4, 5);
+		List<String> args = Stream.of( //
+				param(MQTT_HOST), expectedConfig.mqttHost(), //
+				param(MQTT_PORT), expectedConfig.mqttPort(), //
+				param(LED_RINGS), expectedConfig.rings(), //
+				param(RING_SIZE), expectedConfig.ringSize(), //
+				param(LED_COUNT), expectedConfig.ledCount(), //
+				param(LED_SIZE), expectedConfig.ledSize() //
+		).map(String::valueOf).toList();
+		assertNothingWrittenToSystemErr(() -> assertThat(parseArgs(args)).isEqualTo(expectedConfig));
 	}
 
 	private static String param(Params params) {
