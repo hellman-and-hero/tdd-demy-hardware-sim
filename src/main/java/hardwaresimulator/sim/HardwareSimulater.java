@@ -25,15 +25,10 @@ public class HardwareSimulater {
 
 	public interface Config {
 		String mqttHost();
-
 		int mqttPort();
-
 		int rings();
-
 		int ledCount();
-
 		int ringSize();
-
 		int ledSize();
 	}
 
