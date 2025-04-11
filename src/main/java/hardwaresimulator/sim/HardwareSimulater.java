@@ -89,6 +89,10 @@ public class HardwareSimulater {
 		return mqtt.isConnected();
 	}
 
+	public JLevelMeter levelMeters(int index) {
+		return levelMeters.get(index);
+	}
+
 	private void consume(Message message) {
 		// we could debug, but if a team fails sending the right messages we do not want
 		// to be too verbose ;-)

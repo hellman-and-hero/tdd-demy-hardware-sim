@@ -10,8 +10,6 @@ import static org.mockito.Mockito.verify;
 import java.awt.Color;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -32,12 +30,12 @@ class MainIT {
 	private static final int LED_COUNT = 4;
 	private MqttBroker broker;
 	private MqttClient sender;
-	private List<JLevelMeter> levelMeters = new ArrayList<>();
+	private HardwareSimulater sut;
 
 	@BeforeEach
 	void setup() throws Exception {
 		broker = MqttBroker.builder().host("localhost").port(freePort()).startBroker();
-		createSut(broker, levelMeters);
+		sut = createSut(broker);
 		sender = sender(broker);
 	}
 
@@ -54,12 +52,12 @@ class MainIT {
 		}
 	}
 
-	private static HardwareSimulater createSut(MqttBroker broker, List<JLevelMeter> levelMeters) {
+	private static HardwareSimulater createSut(MqttBroker broker) {
 		ConfigAdapter config = new ConfigAdapter(broker.host(), broker.port(), 2, LED_COUNT, 0, 0);
 		HardwareSimulater hardwareSimulater = new HardwareSimulater(config) {
 			@Override
 			protected JLevelMeter newLevelMeter(Config config) {
-				JLevelMeter mock = spy(new JLevelMeter(4) {
+				JLevelMeter mock = spy(new JLevelMeter(config.ledCount()) {
 
 					private static final long serialVersionUID = 1L;
 
@@ -68,7 +66,6 @@ class MainIT {
 						// no-op
 					}
 				});
-				levelMeters.add(mock);
 				return mock;
 			}
 		};
@@ -89,8 +86,8 @@ class MainIT {
 		publishMessage(led(ringOffset(0) + 1), "#1122FF");
 		publishMessage(led(ringOffset(1) + 3), "#FFFFFF");
 		await().untilAsserted(() -> {
-			verify(levelMeters.get(0)).setColor(led(1), new Color(17, 34, 255));
-			verify(levelMeters.get(1)).setColor(led(3), new Color(255, 255, 255));
+			verify(sut.levelMeters(0)).setColor(led(1), new Color(17, 34, 255));
+			verify(sut.levelMeters(1)).setColor(led(3), new Color(255, 255, 255));
 		});
 	}
 
