@@ -42,7 +42,7 @@ public class HardwareSimulater {
 		try {
 			mqtt = new MqttConsumer(config.mqttHost(), config.mqttPort(), topicPrefix + "#");
 			mqtt.addConsumer(this::consume);
-			levelMeters = range(0, config.rings()).mapToObj(i -> newLevelMeter(config)).toList();
+			levelMeters = range(0, config.rings()).mapToObj(__ -> newLevelMeter(config)).toList();
 			ledStrip = new LedStrip(levelMeters);
 			invokeLater(this::createAndShowGUI);
 		} catch (Exception e) {
