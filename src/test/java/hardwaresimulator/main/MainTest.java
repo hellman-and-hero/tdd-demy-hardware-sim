@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 import hardwaresimulator.main.Main.ConfigAdapter;
-import hardwaresimulator.sim.HardwareSimulater.Config;
+import hardwaresimulator.sim.MqttLedStripService.Config;
 
 class MainTest {
 

@@ -1,6 +1,5 @@
-package hardwaresimulator.main;
+package hardwaresimulator.sim;
 
-import static io.moquette.broker.config.IConfig.ALLOW_ANONYMOUS_PROPERTY_NAME;
 import static io.moquette.broker.config.IConfig.ENABLE_TELEMETRY_NAME;
 import static io.moquette.broker.config.IConfig.HOST_PROPERTY_NAME;
 import static io.moquette.broker.config.IConfig.PERSISTENCE_ENABLED_PROPERTY_NAME;
@@ -12,11 +11,14 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import io.moquette.BrokerConstants;
 import io.moquette.broker.Server;
 import io.moquette.broker.config.IConfig;
 import io.moquette.broker.config.MemoryConfig;
 
 public class MqttBroker implements Closeable {
+
+	private static final int DEFAULT_PORT = BrokerConstants.PORT;
 
 	public static class Builder {
 
@@ -41,14 +43,13 @@ public class MqttBroker implements Closeable {
 			return new MqttBroker(this);
 		}
 
-		public Map<String, String> properties() {
+		private Map<String, String> properties() {
 			return Map.of( //
 					HOST_PROPERTY_NAME, host, //
-					PORT_PROPERTY_NAME, portOr(1883), //
-					ALLOW_ANONYMOUS_PROPERTY_NAME, true, //
+					PORT_PROPERTY_NAME, portOr(DEFAULT_PORT), //
 					PERSISTENCE_ENABLED_PROPERTY_NAME, false, //
 					ENABLE_TELEMETRY_NAME, false //
-			).entrySet().stream().collect(toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+			).entrySet().stream().collect(toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())));
 		}
 
 		private int portOr(int fallback) {
@@ -69,7 +70,7 @@ public class MqttBroker implements Closeable {
 		broker = startBroker(new Server(), config);
 	}
 
-	private static Properties toProperties(Map<? extends Object, ? extends Object> map) {
+	private static Properties toProperties(Map<String, String> map) {
 		Properties properties = new Properties();
 		properties.putAll(map);
 		return properties;
@@ -91,10 +92,6 @@ public class MqttBroker implements Closeable {
 	@Override
 	public void close() {
 		broker.stopServer();
-	}
-
-	public void stop() {
-		close();
 	}
 
 }

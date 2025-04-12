@@ -10,7 +10,7 @@ import org.kohsuke.args4j.CmdLineParser;
 
 import hardwaresimulator.main.args4j.Args4JCmdLineArguments;
 import hardwaresimulator.sim.HardwareSimulater;
-import hardwaresimulator.sim.HardwareSimulater.Config;
+import hardwaresimulator.sim.MqttLedStripService.Config;
 
 public class Main {
 

@@ -1,15 +1,18 @@
-package hardwaresimulator.main;
+package hardwaresimulator.sim;
 
 import static hardwaresimulator.sim.Led.led;
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
+import static java.util.stream.IntStream.range;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.List;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -21,17 +24,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import hardwaresimulator.main.Main.ConfigAdapter;
-import hardwaresimulator.sim.HardwareSimulater;
-import hardwaresimulator.sim.HardwareSimulater.Config;
-import hardwaresimulator.sim.JLevelMeter;
-import hardwaresimulator.sim.Led;
+import hardwaresimulator.sim.MqttLedStripService.Config;
 
-class MainIT {
+class MqttLedStripServiceIT {
 
-	private static final int LED_COUNT = 4;
 	private MqttBroker broker;
 	private MqttClient sender;
-	private HardwareSimulater sut;
+	private Config config;
+	private List<LevelMeter> levelMeters;
+	private MqttLedStripService sut;
 
 	@BeforeEach
 	void setup() throws Exception {
@@ -44,6 +45,7 @@ class MainIT {
 	void tearDown() throws Exception {
 		sender.disconnect();
 		sender.close();
+		sut.close();
 		broker.close();
 	}
 
@@ -53,29 +55,23 @@ class MainIT {
 		}
 	}
 
-	private static HardwareSimulater createSut(MqttBroker broker) {
-		Config config = new ConfigAdapter(broker.host(), broker.port(), 2, LED_COUNT, 0, 0);
-		HardwareSimulater hardwareSimulater = new HardwareSimulater(config) {
-			@Override
-			protected JLevelMeter newLevelMeter(Config config) {
-				return spy(new JLevelMeter(config.ledCount()) {
+	private MqttLedStripService createSut(MqttBroker broker) throws IOException {
+		config = new ConfigAdapter(broker.host(), broker.port(), 2, 4, 0, 0);
+		levelMeters = range(0, config.rings()).mapToObj(__ -> levelMeterMock(config)).toList();
+		MqttLedStripService service = new MqttLedStripService(config, new LedStrip(levelMeters));
+		await().until(service::isConnected);
+		return service;
+	}
 
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					public void setColor(Led led, Color color) {
-						// no-op
-					}
-				});
-			}
-		};
-		await().until(hardwareSimulater::isConnected);
-		return hardwareSimulater;
+	private static LevelMeter levelMeterMock(Config config) {
+		LevelMeter mock = mock(LevelMeter.class);
+		when(mock.getLedCount()).thenReturn(config.ledCount());
+		return mock;
 	}
 
 	private static MqttClient sender(MqttBroker broker) throws MqttException, MqttSecurityException {
 		MqttClient sender = new MqttClient(format("tcp://%s:%d", broker.host(), broker.port()),
-				format("%s-%d", MainIT.class.getName(), currentTimeMillis()), new MemoryPersistence());
+				format("%s-%d", MqttLedStripServiceIT.class.getName(), currentTimeMillis()), new MemoryPersistence());
 		sender.connect();
 		await().until(sender::isConnected);
 		return sender;
@@ -86,8 +82,8 @@ class MainIT {
 		publishMessage(led(ringOffset(0) + 1), "#1122FF");
 		publishMessage(led(ringOffset(1) + 3), "#FFFFFF");
 		await().untilAsserted(() -> {
-			verify(sut.levelMeters(0)).setColor(led(1), new Color(17, 34, 255));
-			verify(sut.levelMeters(1)).setColor(led(3), new Color(255, 255, 255));
+			verify(levelMeters.get(0)).setColor(led(1), new Color(17, 34, 255));
+			verify(levelMeters.get(1)).setColor(led(3), new Color(255, 255, 255));
 		});
 	}
 
@@ -95,8 +91,8 @@ class MainIT {
 		sender.publish(message(led), new MqttMessage(string.getBytes()));
 	}
 
-	private static int ringOffset(int ring) {
-		return ring * LED_COUNT;
+	private int ringOffset(int ring) {
+		return ring * config.ledCount();
 	}
 
 	private static String message(Led led) {
