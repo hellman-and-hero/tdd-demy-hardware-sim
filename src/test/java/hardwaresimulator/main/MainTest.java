@@ -64,16 +64,20 @@ class MainTest {
 
 	@Test
 	void canSetAllOptions() throws Exception {
+		Args4JCmdLineArguments args = args4jArgs();
+		assertNothingWrittenToSystemErr(
+				() -> assertThat(parseArgs(commandLineArgs(args))).isEqualTo(new ConfigAdapter(args)));
+	}
+
+	private static Args4JCmdLineArguments args4jArgs() {
 		Args4JCmdLineArguments args = new Args4JCmdLineArguments();
 		args.mqttHost = "a";
 		args.mqttPort = 1;
-		args.rings = 3;
+		args.rings = 2;
+		args.ledCount = 3;
 		args.ringSize = 4;
-		args.ledCount = 5;
-		args.ledSize = 6;
-
-		assertNothingWrittenToSystemErr(
-				() -> assertThat(parseArgs(commandLineArgs(args))).isEqualTo(new ConfigAdapter(args)));
+		args.ledSize = 5;
+		return args;
 	}
 
 	private static String[] commandLineArgs(Args4JCmdLineArguments args) {
