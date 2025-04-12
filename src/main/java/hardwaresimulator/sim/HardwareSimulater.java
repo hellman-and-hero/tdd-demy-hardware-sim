@@ -2,7 +2,6 @@ package hardwaresimulator.sim;
 
 import static java.util.stream.IntStream.range;
 import static javax.swing.SwingUtilities.invokeLater;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -16,37 +15,26 @@ import javax.swing.JPanel;
 
 import hardwaresimulator.sim.MqttLedStripService.Config;
 
-public class HardwareSimulater implements AutoCloseable {
+public class HardwareSimulater extends JFrame {
 
-	private final List<JLevelMeter> levelMeters;
-	private final MqttLedStripService service;
+	private static final long serialVersionUID = -3260281746665785048L;
 
-	public HardwareSimulater(Config config) {
-		try {
-			levelMeters = range(0, config.rings()).mapToObj(__ -> newLevelMeter(config)).toList();
-			service = new MqttLedStripService(config, new LedStrip(levelMeters)) {
-				@Override
-				protected void switchLed(Led led, Color color) {
-					invokeLater(() -> super.switchLed(led, color));
-				}
-			};
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+	public HardwareSimulater(Config config) throws IOException {
+		super("Hardware Simulator");
 
-	public HardwareSimulater show() {
-		invokeLater(this::createAndShowGUI);
-		return this;
-	}
+		List<JLevelMeter> levelMeters = range(0, config.rings()).mapToObj(__ -> newLevelMeter(config)).toList();
+		MqttLedStripService service = new MqttLedStripService(config, new LedStrip(levelMeters)) {
+			@Override
+			protected void switchLed(Led led, Color color) {
+				invokeLater(() -> super.switchLed(led, color));
+			}
+		};
 
-	private void createAndShowGUI() {
-		JFrame frame = new JFrame("Hardware Simulator");
-		frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		frame.addWindowListener(new WindowAdapter() {
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent __) {
 				try {
-					close();
+					service.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -54,33 +42,16 @@ public class HardwareSimulater implements AutoCloseable {
 
 		});
 
-		frame.setLayout(new FlowLayout());
-		frame.getContentPane().add(panel());
-		frame.pack();
-		frame.setResizable(false);
-		frame.setVisible(true);
-	}
-
-	private JPanel panel() {
+		setLayout(new FlowLayout());
 		JPanel panel = new JPanel();
 		levelMeters.forEach(panel::add);
-		return panel;
+		getContentPane().add(panel);
+
+		pack();
+		setResizable(false);
 	}
 
-	public boolean isConnected() {
-		return service.isConnected();
-	}
-
-	@Override
-	public void close() throws IOException {
-		service.close();
-	}
-
-	public JLevelMeter levelMeters(int index) {
-		return levelMeters.get(index);
-	}
-
-	protected JLevelMeter newLevelMeter(Config config) {
+	private JLevelMeter newLevelMeter(Config config) {
 		return new JLevelMeter(config.ledCount()).withSize(config.ringSize()).withLedSize(config.ledSize());
 	}
 

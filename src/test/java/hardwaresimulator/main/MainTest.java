@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,15 @@ class MainTest {
 	}
 
 	private static Config parseArgs(List<String> args) {
-		return Main.createConfig(args.toArray(String[]::new)).orElse(null);
+		AtomicReference<Config> ref = new AtomicReference<>();
+		Main main = new Main() {
+			@Override
+			protected void showGui(Config config) {
+				ref.set(config);
+			}
+		};
+		main.exec(args.toArray(String[]::new));
+		return ref.get();
 	}
 
 }

@@ -1,8 +1,10 @@
 package hardwaresimulator.main;
 
+import static javax.swing.SwingUtilities.invokeLater;
 import static org.kohsuke.args4j.OptionHandlerFilter.ALL;
 import static org.kohsuke.args4j.ParserProperties.defaults;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import org.kohsuke.args4j.CmdLineException;
@@ -15,11 +17,25 @@ import hardwaresimulator.sim.MqttLedStripService.Config;
 public class Main {
 
 	public static void main(String... args) {
-		createConfig(args).map(HardwareSimulater::new).ifPresent(HardwareSimulater::show);
+		new Main().exec(args);
 	}
 
-	protected static Optional<Config> createConfig(String... args) {
+	protected void exec(String... args) {
+		createConfig(args).ifPresent(this::showGui);
+	}
+
+	private Optional<Config> createConfig(String... args) {
 		return tryParseArgs(args).map(Main::argsAdapter);
+	}
+
+	protected void showGui(Config config) {
+		invokeLater(() -> {
+			try {
+				new HardwareSimulater(config).setVisible(true);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
 	}
 
 	private static Optional<Args4JCmdLineArguments> tryParseArgs(String... args) {
