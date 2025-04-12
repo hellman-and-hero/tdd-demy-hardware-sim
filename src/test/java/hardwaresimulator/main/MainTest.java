@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 import hardwaresimulator.main.Main.ConfigAdapter;
+import hardwaresimulator.main.args4j.Args4JCmdLineArguments;
 import hardwaresimulator.sim.MqttLedStripService.Config;
 
 class MainTest {
@@ -63,17 +64,27 @@ class MainTest {
 
 	@Test
 	void canSetAllOptions() throws Exception {
-		Config config = new ConfigAdapter("a", 1, 2, 3, 4, 5);
+		Args4JCmdLineArguments args = new Args4JCmdLineArguments();
+		args.mqttHost = "a";
+		args.mqttPort = 1;
+		args.rings = 3;
+		args.ringSize = 4;
+		args.ledCount = 5;
+		args.ledSize = 6;
 
-		String[] args = args( //
-				MQTT_HOST.withValue(config.mqttHost()), //
-				MQTT_PORT.withValue(config.mqttPort()), //
-				LED_RINGS.withValue(config.rings()), //
-				RING_SIZE.withValue(config.ringSize()), //
-				LED_COUNT.withValue(config.ledCount()), //
-				LED_SIZE.withValue(config.ledSize()) //
+		assertNothingWrittenToSystemErr(
+				() -> assertThat(parseArgs(commandLineArgs(args))).isEqualTo(new ConfigAdapter(args)));
+	}
+
+	private static String[] commandLineArgs(Args4JCmdLineArguments args) {
+		return args( //
+				MQTT_HOST.withValue(args.mqttHost), //
+				MQTT_PORT.withValue(args.mqttPort), //
+				LED_RINGS.withValue(args.rings), //
+				RING_SIZE.withValue(args.ringSize), //
+				LED_COUNT.withValue(args.ledCount), //
+				LED_SIZE.withValue(args.ledSize) //
 		);
-		assertNothingWrittenToSystemErr(() -> assertThat(parseArgs(args)).isEqualTo(config));
 	}
 
 	private static Config parseArgs(String[] args) {

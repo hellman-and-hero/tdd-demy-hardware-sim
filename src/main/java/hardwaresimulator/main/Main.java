@@ -25,7 +25,7 @@ public class Main {
 	}
 
 	private Optional<Config> createConfig(String... args) {
-		return tryParseArgs(args).map(Main::argsAdapter);
+		return tryParseArgs(args).map(ConfigAdapter::new);
 	}
 
 	protected void showGui(Config config) {
@@ -63,10 +63,10 @@ public class Main {
 
 	public static record ConfigAdapter(String mqttHost, int mqttPort, int rings, int ledCount, int ringSize,
 			int ledSize) implements Config {
-	}
 
-	private static Config argsAdapter(Args4JCmdLineArguments args) {
-		return new ConfigAdapter(args.mqttHost, args.mqttPort, args.rings, args.ledCount, args.ringSize, args.ledSize);
+		public ConfigAdapter(Args4JCmdLineArguments args) {
+			this(args.mqttHost, args.mqttPort, args.rings, args.ledCount, args.ringSize, args.ledSize);
+		}
 	}
 
 }
