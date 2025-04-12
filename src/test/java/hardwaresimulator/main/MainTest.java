@@ -8,12 +8,13 @@ import static hardwaresimulator.main.MainTest.Params.LED_SIZE;
 import static hardwaresimulator.main.MainTest.Params.MQTT_HOST;
 import static hardwaresimulator.main.MainTest.Params.MQTT_PORT;
 import static hardwaresimulator.main.MainTest.Params.RING_SIZE;
+import static hardwaresimulator.main.MainTest.Params.args;
+import static hardwaresimulator.main.MainTest.Params.options;
+import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,45 +31,52 @@ class MainTest {
 		LED_COUNT("-ledCount"), //
 		LED_SIZE("-ledSize"); //
 
-		private final String value;
+		private final String option;
 
-		private Params(String value) {
-			this.value = value;
+		private Params(String option) {
+			this.option = option;
 		}
 
-		public String getValue() {
-			return value;
+		public String getOption() {
+			return option;
 		}
 
-		public static List<String> all() {
-			return Arrays.stream(values()).map(Params::getValue).toList();
+		public static List<String> options() {
+			return stream(values()).map(Params::getOption).toList();
 		}
+
+		public List<String> withValue(Object value) {
+			return List.of(getOption(), String.valueOf(value));
+		}
+
+		@SafeVarargs
+		public static String[] args(List<String>... args) {
+			return stream(args).flatMap(List::stream).toArray(String[]::new);
+		}
+
 	}
 
 	@Test
 	void printsHelpForEachOptionOnMinusH() throws Exception {
-		assertThat(tapSystemErr(() -> Main.main("-h"))).contains(Params.all());
+		assertThat(tapSystemErr(() -> Main.main("-h"))).contains(options());
 	}
 
 	@Test
 	void canSetAllOptions() throws Exception {
-		Config expectedConfig = new ConfigAdapter("a", 1, 2, 3, 4, 5);
-		List<String> args = Stream.of( //
-				param(MQTT_HOST), expectedConfig.mqttHost(), //
-				param(MQTT_PORT), expectedConfig.mqttPort(), //
-				param(LED_RINGS), expectedConfig.rings(), //
-				param(RING_SIZE), expectedConfig.ringSize(), //
-				param(LED_COUNT), expectedConfig.ledCount(), //
-				param(LED_SIZE), expectedConfig.ledSize() //
-		).map(String::valueOf).toList();
-		assertNothingWrittenToSystemErr(() -> assertThat(parseArgs(args)).isEqualTo(expectedConfig));
+		Config config = new ConfigAdapter("a", 1, 2, 3, 4, 5);
+
+		String[] args = args( //
+				MQTT_HOST.withValue(config.mqttHost()), //
+				MQTT_PORT.withValue(config.mqttPort()), //
+				LED_RINGS.withValue(config.rings()), //
+				RING_SIZE.withValue(config.ringSize()), //
+				LED_COUNT.withValue(config.ledCount()), //
+				LED_SIZE.withValue(config.ledSize()) //
+		);
+		assertNothingWrittenToSystemErr(() -> assertThat(parseArgs(args)).isEqualTo(config));
 	}
 
-	private static String param(Params params) {
-		return params.value;
-	}
-
-	private static Config parseArgs(List<String> args) {
+	private static Config parseArgs(String[] args) {
 		AtomicReference<Config> ref = new AtomicReference<>();
 		Main main = new Main() {
 			@Override
@@ -76,7 +84,7 @@ class MainTest {
 				ref.set(config);
 			}
 		};
-		main.exec(args.toArray(String[]::new));
+		main.exec(args);
 		return ref.get();
 	}
 
