@@ -23,14 +23,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import hardwaresimulator.main.Main.ConfigAdapter;
-import hardwaresimulator.sim.MqttLedStripService.Config;
-
 class MqttLedStripServiceIT {
+
+	private static final int LED_COUNT = 4;
 
 	private MqttBroker broker;
 	private MqttClient sender;
-	private Config config;
 	private List<LevelMeter> levelMeters;
 	private MqttLedStripService sut;
 
@@ -56,16 +54,15 @@ class MqttLedStripServiceIT {
 	}
 
 	private MqttLedStripService createSut(MqttBroker broker) throws IOException {
-		config = new ConfigAdapter(broker.host(), broker.port(), 2, 4, 0, 0);
-		levelMeters = range(0, config.rings()).mapToObj(__ -> levelMeterMock(config)).toList();
-		MqttLedStripService service = new MqttLedStripService(config, new LedStrip(levelMeters));
+		levelMeters = range(0, 2).mapToObj(__ -> levelMeterMock(LED_COUNT)).toList();
+		MqttLedStripService service = new MqttLedStripService(broker.host(), broker.port(), new LedStrip(levelMeters));
 		await().until(service::isConnected);
 		return service;
 	}
 
-	private static LevelMeter levelMeterMock(Config config) {
+	private static LevelMeter levelMeterMock(int ledCount) {
 		LevelMeter mock = mock(LevelMeter.class);
-		when(mock.getLedCount()).thenReturn(config.ledCount());
+		when(mock.getLedCount()).thenReturn(ledCount);
 		return mock;
 	}
 
@@ -79,11 +76,13 @@ class MqttLedStripServiceIT {
 
 	@Test
 	void consumeMqttMessage() throws Exception {
-		publishMessage(led(ringOffset(0) + 1), "#1122FF");
-		publishMessage(led(ringOffset(1) + 3), "#FFFFFF");
+		String color1 = "#1122FF";
+		String color2 = "#FFFFFF";
+		publishMessage(led(ringOffset(0) + 1), color1);
+		publishMessage(led(ringOffset(1) + 3), color2);
 		await().untilAsserted(() -> {
-			verify(levelMeters.get(0)).setColor(led(1), new Color(17, 34, 255));
-			verify(levelMeters.get(1)).setColor(led(3), new Color(255, 255, 255));
+			verify(levelMeters.get(0)).setColor(led(1), Color.decode(color1));
+			verify(levelMeters.get(1)).setColor(led(3), Color.decode(color2));
 		});
 	}
 
@@ -92,7 +91,7 @@ class MqttLedStripServiceIT {
 	}
 
 	private int ringOffset(int ring) {
-		return ring * config.ledCount();
+		return ring * LED_COUNT;
 	}
 
 	private static String message(Led led) {

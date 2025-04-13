@@ -31,12 +31,12 @@ public class MqttLedStripService implements AutoCloseable {
 	private final String topicPrefix = "some/led/";
 	private final Pattern topicPattern = compile(topicPrefix + "(\\d+)/rgb");
 
-	private final MqttConsumer mqtt;
 	private final LedStrip ledStrip;
+	private final MqttConsumer mqtt;
 
-	public MqttLedStripService(MqttLedStripService.Config config, LedStrip ledStrip) throws IOException {
-		this.mqtt = new MqttConsumer(config.mqttHost(), config.mqttPort(), topicPrefix + "#");
+	public MqttLedStripService(String mqttHost, int mqttPort, LedStrip ledStrip) throws IOException {
 		this.ledStrip = ledStrip;
+		this.mqtt = new MqttConsumer(mqttHost, mqttPort, topicPrefix + "#");
 		this.mqtt.addConsumer(this::consume);
 	}
 
