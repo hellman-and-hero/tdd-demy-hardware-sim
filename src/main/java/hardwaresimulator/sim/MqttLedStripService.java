@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import hardwaresimulator.mqtt.Message;
-import hardwaresimulator.mqtt.MqttConsumer;
+import hardwaresimulator.mqtt.MqttClient;
 
 public class MqttLedStripService implements AutoCloseable {
 
@@ -33,12 +33,12 @@ public class MqttLedStripService implements AutoCloseable {
 	private final Pattern topicPattern = compile(topicPrefix + "(\\d+)/rgb");
 
 	private final LedStrip ledStrip;
-	private final MqttConsumer mqtt;
+	private final MqttClient mqtt;
 
 	public MqttLedStripService(String mqttHost, int mqttPort, List<? extends LevelMeter> levelMeters)
 			throws IOException {
 		this.ledStrip = new LedStrip(levelMeters);
-		this.mqtt = new MqttConsumer(mqttHost, mqttPort, topicPrefix + "#");
+		this.mqtt = new MqttClient(mqttHost, mqttPort, topicPrefix + "#");
 		this.mqtt.addConsumer(this::consume);
 	}
 

@@ -2,7 +2,6 @@ package hardwaresimulator.sim;
 
 import static hardwaresimulator.sim.Led.led;
 import static java.lang.String.format;
-import static java.lang.System.currentTimeMillis;
 import static java.util.stream.IntStream.range;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
@@ -14,14 +13,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.List;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import hardwaresimulator.mqtt.MqttClient;
 
 class MqttLedStripServiceIT {
 
@@ -41,7 +37,6 @@ class MqttLedStripServiceIT {
 
 	@AfterEach
 	void tearDown() throws Exception {
-		sender.disconnect();
 		sender.close();
 		sut.close();
 		broker.close();
@@ -66,28 +61,30 @@ class MqttLedStripServiceIT {
 		return mock;
 	}
 
-	private static MqttClient sender(MqttBroker broker) throws MqttException, MqttSecurityException {
-		MqttClient sender = new MqttClient(format("tcp://%s:%d", broker.host(), broker.port()),
-				format("%s-%d", MqttLedStripServiceIT.class.getName(), currentTimeMillis()), new MemoryPersistence());
-		sender.connect();
+	private static MqttClient sender(MqttBroker broker) throws IOException {
+		MqttClient sender = new MqttClient(broker.host(), broker.port(), "#");
 		await().until(sender::isConnected);
 		return sender;
 	}
 
 	@Test
 	void consumeMqttMessage() throws Exception {
-		String color1 = "#1122FF";
-		String color2 = "#FFFFFF";
+		Color color1 = Color.decode("#1122FF");
+		Color color2 = Color.decode("#FFFFFF");
 		publishMessage(led(ringOffset(0) + 1), color1);
 		publishMessage(led(ringOffset(1) + 3), color2);
 		await().untilAsserted(() -> {
-			verify(levelMeters.get(0)).setColor(led(1), Color.decode(color1));
-			verify(levelMeters.get(1)).setColor(led(3), Color.decode(color2));
+			verify(levelMeters.get(0)).setColor(led(1), color1);
+			verify(levelMeters.get(1)).setColor(led(3), color2);
 		});
 	}
 
-	private void publishMessage(Led led, String string) throws Exception {
-		sender.publish(message(led), new MqttMessage(string.getBytes()));
+	private void publishMessage(Led led, Color color) throws IOException {
+		sender.publish(message(led), toString(color));
+	}
+
+	private static String toString(Color color) {
+		return format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
 	}
 
 	private int ringOffset(int ring) {

@@ -13,20 +13,20 @@ import java.util.function.Consumer;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class MqttConsumer implements Closeable {
+public class MqttClient implements Closeable {
 
-	private final MqttClient mqttClient;
+	private final org.eclipse.paho.client.mqttv3.MqttClient mqttClient;
 	private final List<Consumer<Message>> consumers = new CopyOnWriteArrayList<>();
 
-	public MqttConsumer(String host, int port, String topic) throws IOException {
+	public MqttClient(String host, int port, String topic) throws IOException {
 		try {
-			mqttClient = new MqttClient(serverURI(host, port), clientId(), new MemoryPersistence());
+			mqttClient = new org.eclipse.paho.client.mqttv3.MqttClient(serverURI(host, port), clientId(),
+					new MemoryPersistence());
 			mqttClient.setTimeToWait(SECONDS.toMillis(1));
 			mqttClient.setCallback(callback(() -> subscribe(topic)));
 			mqttClient.connect(connectOptions());
@@ -90,6 +90,14 @@ public class MqttConsumer implements Closeable {
 
 	private void subscribe(String topic) throws MqttException {
 		mqttClient.subscribe(topic);
+	}
+
+	public void publish(String topic, String message) throws IOException {
+		try {
+			mqttClient.publish(topic, new MqttMessage(message.getBytes()));
+		} catch (MqttException e) {
+			throw new IOException(e);
+		}
 	}
 
 	@Override
