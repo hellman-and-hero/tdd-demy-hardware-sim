@@ -112,10 +112,6 @@ public class MqttClient implements Closeable {
 		}
 	}
 
-	public boolean isConnected() {
-		return mqttClient.isConnected();
-	}
-
 	public void addConsumer(Consumer<Message> consumer) {
 		consumers.add(consumer);
 	}

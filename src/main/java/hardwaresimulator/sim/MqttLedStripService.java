@@ -56,10 +56,6 @@ public class MqttLedStripService implements AutoCloseable {
 		ledStrip.switchLed(led, color);
 	}
 
-	public boolean isConnected() {
-		return mqtt.isConnected();
-	}
-
 	@Override
 	public void close() throws IOException {
 		mqtt.close();

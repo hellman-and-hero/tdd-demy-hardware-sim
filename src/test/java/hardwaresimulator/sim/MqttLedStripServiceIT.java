@@ -24,9 +24,9 @@ class MqttLedStripServiceIT {
 	private static final int LED_COUNT = 4;
 
 	private MqttBroker broker;
-	private MqttClient sender;
-	private List<LevelMeter> levelMeters;
 	private MqttLedStripService sut;
+	private List<LevelMeter> levelMeters;
+	private MqttClient sender;
 
 	@BeforeEach
 	void setup() throws Exception {
@@ -50,9 +50,7 @@ class MqttLedStripServiceIT {
 
 	private MqttLedStripService createSut(MqttBroker broker) throws IOException {
 		levelMeters = range(0, 2).mapToObj(__ -> levelMeterMock(LED_COUNT)).toList();
-		MqttLedStripService service = new MqttLedStripService(broker.host(), broker.port(), levelMeters);
-		await().until(service::isConnected);
-		return service;
+		return new MqttLedStripService(broker.host(), broker.port(), levelMeters);
 	}
 
 	private static LevelMeter levelMeterMock(int ledCount) {
@@ -62,25 +60,34 @@ class MqttLedStripServiceIT {
 	}
 
 	private static MqttClient sender(MqttBroker broker) throws IOException {
-		MqttClient sender = new MqttClient(broker.host(), broker.port(), "#");
-		await().until(sender::isConnected);
-		return sender;
+		return new MqttClient(broker.host(), broker.port(), "#");
 	}
 
 	@Test
 	void consumeMqttMessage() throws Exception {
-		Color color1 = Color.decode("#1122FF");
-		Color color2 = Color.decode("#FFFFFF");
-		publishMessage(led(ringOffset(0) + 1), color1);
-		publishMessage(led(ringOffset(1) + 3), color2);
+		Color color1 = Color.decode("#FF0000");
+		Color color2 = Color.decode("#00FF00");
+		Color color3 = Color.decode("#0000FF");
+		publishMessage(0, led(1), color1);
+		publishMessage(1, led(0), color2);
+		publishMessage(1, led(3), color3);
 		await().untilAsserted(() -> {
 			verify(levelMeters.get(0)).setColor(led(1), color1);
-			verify(levelMeters.get(1)).setColor(led(3), color2);
+			verify(levelMeters.get(1)).setColor(led(0), color2);
+			verify(levelMeters.get(1)).setColor(led(3), color3);
 		});
 	}
 
-	private void publishMessage(Led led, Color color) throws IOException {
-		sender.publish(message(led), toString(color));
+	private void publishMessage(int ring, Led led, Color color) throws IOException {
+		sender.publish(message(stripIndex(ring, led)), toString(color));
+	}
+
+	private int stripIndex(int ring, Led led) {
+		return ringOffset(ring) + led.index();
+	}
+
+	private static String message(int stripIndex) {
+		return format("some/led/%d/rgb", stripIndex);
 	}
 
 	private static String toString(Color color) {
@@ -89,10 +96,6 @@ class MqttLedStripServiceIT {
 
 	private int ringOffset(int ring) {
 		return ring * LED_COUNT;
-	}
-
-	private static String message(Led led) {
-		return format("some/led/%d/rgb", led.index());
 	}
 
 }
