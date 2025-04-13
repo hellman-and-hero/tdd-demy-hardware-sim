@@ -14,6 +14,7 @@ import java.net.ServerSocket;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,23 +24,20 @@ class MqttLedStripServiceIT {
 
 	private static final int LED_COUNT = 4;
 
-	private MqttBroker broker;
-	private MqttLedStripService sut;
-	private List<LevelMeter> levelMeters;
+	private final List<LevelMeter> levelMeters = range(0, 2).mapToObj(__ -> levelMeterMock(LED_COUNT)).toList();
+
+	@AutoClose
 	private MqttClient sender;
+	@AutoClose
+	private MqttLedStripService sut;
+	@AutoClose
+	private MqttBroker broker;
 
 	@BeforeEach
 	void setup() throws Exception {
 		broker = MqttBroker.builder().host("localhost").port(freePort()).startBroker();
 		sut = createSut(broker);
 		sender = sender(broker);
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
-		sender.close();
-		sut.close();
-		broker.close();
 	}
 
 	private static int freePort() throws IOException {
@@ -49,7 +47,6 @@ class MqttLedStripServiceIT {
 	}
 
 	private MqttLedStripService createSut(MqttBroker broker) throws IOException {
-		levelMeters = range(0, 2).mapToObj(__ -> levelMeterMock(LED_COUNT)).toList();
 		return new MqttLedStripService(broker.host(), broker.port(), levelMeters);
 	}
 
