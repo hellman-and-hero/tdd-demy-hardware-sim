@@ -55,7 +55,7 @@ class MqttLedStripServiceIT {
 
 	private MqttLedStripService createSut(MqttBroker broker) throws IOException {
 		levelMeters = range(0, 2).mapToObj(__ -> levelMeterMock(LED_COUNT)).toList();
-		MqttLedStripService service = new MqttLedStripService(broker.host(), broker.port(), new LedStrip(levelMeters));
+		MqttLedStripService service = new MqttLedStripService(broker.host(), broker.port(), levelMeters);
 		await().until(service::isConnected);
 		return service;
 	}

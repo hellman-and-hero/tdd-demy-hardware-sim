@@ -6,6 +6,7 @@ import static javax.swing.SwingUtilities.invokeLater;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,8 +35,9 @@ public class MqttLedStripService implements AutoCloseable {
 	private final LedStrip ledStrip;
 	private final MqttConsumer mqtt;
 
-	public MqttLedStripService(String mqttHost, int mqttPort, LedStrip ledStrip) throws IOException {
-		this.ledStrip = ledStrip;
+	public MqttLedStripService(String mqttHost, int mqttPort, List<? extends LevelMeter> levelMeters)
+			throws IOException {
+		this.ledStrip = new LedStrip(levelMeters);
 		this.mqtt = new MqttConsumer(mqttHost, mqttPort, topicPrefix + "#");
 		this.mqtt.addConsumer(this::consume);
 	}

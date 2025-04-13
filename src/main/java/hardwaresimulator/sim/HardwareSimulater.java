@@ -23,8 +23,7 @@ public class HardwareSimulater extends JFrame {
 		super("Hardware Simulator");
 
 		List<JLevelMeter> levelMeters = range(0, config.rings()).mapToObj(__ -> newLevelMeter(config)).toList();
-		MqttLedStripService service = new MqttLedStripService(config.mqttHost(), config.mqttPort(),
-				new LedStrip(levelMeters)) {
+		MqttLedStripService service = new MqttLedStripService(config.mqttHost(), config.mqttPort(), levelMeters) {
 			@Override
 			protected void switchLed(Led led, Color color) {
 				invokeLater(() -> super.switchLed(led, color));
