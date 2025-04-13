@@ -92,6 +92,10 @@ public class MqttClient implements Closeable {
 		mqttClient.subscribe(topic);
 	}
 
+	public void addConsumer(Consumer<Message> consumer) {
+		consumers.add(consumer);
+	}
+
 	public void publish(String topic, String message) throws IOException {
 		try {
 			mqttClient.publish(topic, new MqttMessage(message.getBytes()));
@@ -103,17 +107,10 @@ public class MqttClient implements Closeable {
 	@Override
 	public void close() throws IOException {
 		try {
-			if (mqttClient.isConnected()) {
-				mqttClient.disconnect();
-			}
-			mqttClient.close();
+			mqttClient.close(true);
 		} catch (MqttException e) {
 			throw new IOException(e);
 		}
-	}
-
-	public void addConsumer(Consumer<Message> consumer) {
-		consumers.add(consumer);
 	}
 
 }
