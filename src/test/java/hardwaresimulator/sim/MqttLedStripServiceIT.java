@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,39 +59,43 @@ class MqttLedStripServiceIT {
 		return new MqttClient(broker.host(), broker.port(), "#");
 	}
 
+	private static record LedSwitch(int ring, Led led, Color color) {
+
+		public LedSwitch(int ring, Led led, String color) {
+			this(ring, led, Color.decode(color));
+		}
+
+		private int stripIndex() {
+			return ringOffset(ring) + led.index();
+		}
+
+		private static int ringOffset(int ring) {
+			return ring * LED_COUNT;
+		}
+
+		private String colorHexString() {
+			return format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+		}
+
+	}
+
 	@Test
-	void consumeMqttMessage() throws Exception {
-		Color color1 = Color.decode("#FF0000");
-		Color color2 = Color.decode("#00FF00");
-		Color color3 = Color.decode("#0000FF");
-		publishMessage(0, led(1), color1);
-		publishMessage(1, led(0), color2);
-		publishMessage(1, led(3), color3);
-		await().untilAsserted(() -> {
-			verify(levelMeters.get(0)).setColor(led(1), color1);
-			verify(levelMeters.get(1)).setColor(led(0), color2);
-			verify(levelMeters.get(1)).setColor(led(3), color3);
-		});
+	void consumeMqttMessage() {
+		List<LedSwitch> messages = List.of( //
+				new LedSwitch(0, led(1), "#FF0000"), //
+				new LedSwitch(1, led(0), "#00FF00"), //
+				new LedSwitch(1, led(3), "#0000FF") //
+		);
+		messages.forEach(this::publishMessage);
+		await().untilAsserted(() -> messages.forEach(m -> verify(levelMeters.get(m.ring)).setColor(m.led, m.color)));
 	}
 
-	private void publishMessage(int ring, Led led, Color color) throws IOException {
-		sender.publish(message(stripIndex(ring, led)), toString(color));
-	}
-
-	private int stripIndex(int ring, Led led) {
-		return ringOffset(ring) + led.index();
-	}
-
-	private static String message(int stripIndex) {
-		return format("some/led/%d/rgb", stripIndex);
-	}
-
-	private static String toString(Color color) {
-		return format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
-	}
-
-	private int ringOffset(int ring) {
-		return ring * LED_COUNT;
+	private void publishMessage(LedSwitch message) {
+		try {
+			sender.publish(format("some/led/%d/rgb", message.stripIndex()), message.colorHexString());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }
