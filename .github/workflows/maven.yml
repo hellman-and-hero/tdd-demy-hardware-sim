@@ -34,7 +34,7 @@ jobs:
       run: mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent verify --file pom.xml
 
     - name: Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v6
 
     - name: Test Report
       uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v1
